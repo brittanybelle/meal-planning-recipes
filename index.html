@@ -85,6 +85,42 @@
   tr.details .visit:hover { background: #2f4a3a; }
   .empty { padding: 2.5rem; text-align: center; color: #8a8578; }
   footer { margin-top: 1.25rem; font-size: 0.78rem; color: #8a8578; }
+  .sort-mobile { display: none; }
+
+  @media (max-width: 720px) {
+    body { padding: 1rem 0.85rem 3rem; }
+    header h1 { font-size: 1.3rem; }
+    header .sub { font-size: 0.9rem; }
+    .legend { font-size: 0.75rem; }
+    .controls { padding: 0.75rem; gap: 0.5rem; }
+    /* 16px stops iOS Safari from zooming in on focus */
+    .controls input[type="search"] { flex-basis: 100%; font-size: 16px; padding: 0.6rem 0.8rem; }
+    .btn-group { width: 100%; }
+    .btn-group button { flex: 1 1 auto; padding: 0.6rem 0.4rem; }
+    .controls select { width: 100%; padding: 0.65rem 0.8rem; font-size: 0.95rem; }
+    .sort-mobile { display: block; }
+
+    /* table becomes stacked cards */
+    .table-wrap { background: none; border: none; border-radius: 0; overflow: visible; }
+    table { min-width: 0; }
+    table, tbody, tr, td { display: block; }
+    thead { display: none; }
+    tbody tr.main { background: #fff; border: 1px solid #e5e0d5; border-radius: 12px; margin-bottom: 0.75rem; padding: 0.4rem 0 0.6rem; }
+    tbody tr.main:hover { background: #fff; }
+    tbody tr.main.open { border-radius: 12px 12px 0 0; margin-bottom: 0; }
+    td { padding: 0.2rem 1rem; }
+    td[data-label] { display: flex; gap: 0.6rem; align-items: baseline; }
+    td[data-label]::before {
+      content: attr(data-label); flex: 0 0 4.6rem;
+      font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: #a09a89;
+    }
+    td.recipe { display: block; min-width: 0; padding-top: 0.65rem; padding-bottom: 0.45rem; }
+    td.time { white-space: normal; }
+    td.time .extra { display: inline; margin-left: 0.3rem; }
+    tr.details { background: #fbfaf5; border: 1px solid #e5e0d5; border-top: none; border-radius: 0 0 12px 12px; margin-bottom: 0.75rem; }
+    tr.details td { display: block; padding: 0.9rem 1rem 1.1rem; border-top: 1px dashed #e5e0d5; }
+    .empty { border: 1px solid #e5e0d5; border-radius: 12px; background: #fff; }
+  }
 </style>
 </head>
 <body>
@@ -121,6 +157,12 @@
       <button data-rate="medium">Medium</button>
       <button data-rate="low">Low</button>
     </div>
+    <select id="sortSel" class="sort-mobile" aria-label="Sort recipes">
+      <option value="lunch|1">Sort: best packed lunch first</option>
+      <option value="min|1">Sort: quickest first</option>
+      <option value="title|1">Sort: A → Z</option>
+      <option value="mods|1">Sort: fewest changes first</option>
+    </select>
     <button class="reset" id="reset">Reset</button>
   </div>
 
@@ -411,7 +453,7 @@ function filtered() {
 function render() {
   const list = filtered();
   countEl.textContent = "Showing " + list.length + " of " + DATA.length + " recipes" +
-    (state.sortKey === "lunch" && state.sortDir === 1 ? " — sorted by packed-lunch rating (click column headers to re-sort)" : "");
+    (state.sortKey === "lunch" && state.sortDir === 1 ? " — sorted by packed-lunch rating" : "");
   document.querySelectorAll("thead th").forEach(th => {
     const arrow = th.querySelector(".arrow");
     arrow.textContent = th.dataset.sort === state.sortKey ? (state.sortDir === 1 ? "▲" : "▼") : "";
@@ -429,10 +471,10 @@ function render() {
     const main =
       '<tr class="main' + (isOpen ? " open" : "") + '" data-url="' + esc(r.url) + '">' +
       '<td class="recipe"><span class="chev">▶</span><span class="title">' + esc(r.title) + '</span><div class="cats">' + cats + "</div></td>" +
-      '<td class="time">' + esc(r.time) + (r.est ? ' <span class="est">est.</span>' : "") + (r.extra ? '<span class="extra">' + esc(r.extra) + "</span>" : "") + "</td>" +
-      "<td>" + esc(r.protein) + "</td>" +
-      '<td><span class="badge ' + r.lunch + '">' + RATE_LABEL[r.lunch] + "</span></td>" +
-      "<td>" + modFlag + "</td></tr>";
+      '<td class="time" data-label="Time">' + esc(r.time) + (r.est ? ' <span class="est">est.</span>' : "") + (r.extra ? '<span class="extra">' + esc(r.extra) + "</span>" : "") + "</td>" +
+      '<td data-label="Protein">' + esc(r.protein) + "</td>" +
+      '<td data-label="Lunch"><span class="badge ' + r.lunch + '">' + RATE_LABEL[r.lunch] + "</span></td>" +
+      '<td data-label="Changes">' + modFlag + "</td></tr>";
     if (!isOpen) return main;
     const mods = r.mods.length
       ? "<ul>" + r.mods.map(m => "<li>" + esc(m) + "</li>").join("") + "</ul>"
@@ -458,6 +500,12 @@ rowsEl.addEventListener("click", e => {
 
 document.getElementById("q").addEventListener("input", e => { state.q = e.target.value; render(); });
 document.getElementById("prot").addEventListener("change", e => { state.prot = e.target.value; render(); });
+document.getElementById("sortSel").addEventListener("change", e => {
+  const parts = e.target.value.split("|");
+  state.sortKey = parts[0];
+  state.sortDir = parseInt(parts[1], 10);
+  render();
+});
 
 function wireButtons(containerId, attr, key) {
   const box = document.getElementById(containerId);
@@ -485,6 +533,7 @@ document.getElementById("reset").addEventListener("click", () => {
   state = { q: "", cat: "all", prot: "all", rate: "all", sortKey: "lunch", sortDir: 1, open: new Set() };
   document.getElementById("q").value = "";
   document.getElementById("prot").value = "all";
+  document.getElementById("sortSel").value = "lunch|1";
   document.querySelectorAll("#catBtns button").forEach(b => b.classList.toggle("active", b.dataset.cat === "all"));
   document.querySelectorAll("#rateBtns button").forEach(b => b.classList.toggle("active", b.dataset.rate === "all"));
   render();
