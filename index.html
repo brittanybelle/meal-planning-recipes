@@ -1,0 +1,496 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Smitten Kitchen — Diabetic-Friendly Vegetarian Recipes</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #faf7f1;
+    color: #2b2b28;
+    line-height: 1.5;
+    padding: 2rem 1.25rem 4rem;
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; }
+  header h1 { font-size: 1.75rem; color: #2f4a3a; letter-spacing: -0.01em; }
+  header .sub { color: #6b6a63; margin-top: 0.35rem; max-width: 62rem; }
+  header .sub a { color: #3a7d54; }
+  .legend { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.9rem; font-size: 0.8rem; }
+  .legend span { background: #fff; border: 1px solid #e5e0d5; border-radius: 999px; padding: 0.2rem 0.7rem; color: #5c5b53; }
+  .legend b { font-weight: 600; }
+
+  .controls {
+    display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center;
+    background: #fff; border: 1px solid #e5e0d5; border-radius: 12px;
+    padding: 0.8rem 1rem; margin-top: 1.4rem;
+  }
+  .controls input[type="search"] {
+    flex: 1 1 220px; min-width: 180px;
+    padding: 0.5rem 0.75rem; border: 1px solid #d8d2c4; border-radius: 8px;
+    font-size: 0.9rem; background: #fdfcf9;
+  }
+  .controls input[type="search"]:focus { outline: 2px solid #3a7d54; outline-offset: 1px; }
+  .btn-group { display: flex; gap: 0.25rem; flex-wrap: wrap; }
+  .controls button, .controls select {
+    padding: 0.45rem 0.8rem; border: 1px solid #d8d2c4; border-radius: 8px;
+    background: #fdfcf9; font-size: 0.85rem; cursor: pointer; color: #3d3c36;
+  }
+  .controls button:hover { border-color: #3a7d54; }
+  .controls button.active { background: #2f4a3a; color: #fff; border-color: #2f4a3a; }
+  .controls .reset { border: none; background: none; color: #8a8578; text-decoration: underline; }
+  .count { margin: 0.9rem 0 0.5rem; color: #6b6a63; font-size: 0.85rem; }
+
+  .table-wrap { overflow-x: auto; background: #fff; border: 1px solid #e5e0d5; border-radius: 12px; }
+  table { width: 100%; border-collapse: collapse; min-width: 780px; }
+  thead th {
+    text-align: left; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: #7a776b; background: #f4f0e6; padding: 0.7rem 0.9rem;
+    cursor: pointer; user-select: none; white-space: nowrap;
+    position: sticky; top: 0;
+  }
+  thead th:hover { color: #2f4a3a; }
+  thead th .arrow { font-size: 0.7rem; }
+  tbody tr.main { border-top: 1px solid #eee9dd; cursor: pointer; }
+  tbody tr.main:hover { background: #faf8f2; }
+  td { padding: 0.75rem 0.9rem; vertical-align: top; font-size: 0.9rem; }
+  td.recipe { min-width: 220px; }
+  td.recipe .title { font-weight: 600; color: #2b2b28; }
+  td.recipe .chev { color: #b3ad9d; font-size: 0.75rem; margin-right: 0.35rem; display: inline-block; transition: transform 0.15s; }
+  tr.open td.recipe .chev { transform: rotate(90deg); }
+  .cats { margin-top: 0.25rem; display: flex; gap: 0.3rem; flex-wrap: wrap; }
+  .cat { font-size: 0.68rem; padding: 0.1rem 0.5rem; border-radius: 999px; background: #f0ece1; color: #6b6a63; }
+  td.time { white-space: nowrap; color: #3d3c36; }
+  td.time .est { color: #a09a89; font-size: 0.75rem; }
+  td.time .extra { display: block; color: #a09a89; font-size: 0.75rem; }
+  .badge { display: inline-block; font-size: 0.75rem; font-weight: 600; padding: 0.2rem 0.65rem; border-radius: 999px; white-space: nowrap; }
+  .badge.high   { background: #e0efe2; color: #256437; }
+  .badge.medium { background: #f7ecd4; color: #8a6414; }
+  .badge.low    { background: #eceae4; color: #75736a; }
+  .modflag { font-size: 0.75rem; color: #8a6414; }
+  .modflag.none { color: #256437; }
+
+  tr.details td {
+    background: #fbfaf5; border-top: 1px dashed #e5e0d5;
+    padding: 0.9rem 1.1rem 1.1rem; font-size: 0.85rem; color: #45443e;
+  }
+  tr.details .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.8rem 1.5rem; }
+  tr.details h4 { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: #8a8578; margin-bottom: 0.25rem; }
+  tr.details ul { padding-left: 1.1rem; }
+  tr.details .visit {
+    display: inline-block; margin-top: 0.75rem; font-size: 0.82rem; font-weight: 600;
+    color: #fff; background: #3a7d54; padding: 0.4rem 0.9rem; border-radius: 8px; text-decoration: none;
+  }
+  tr.details .visit:hover { background: #2f4a3a; }
+  .empty { padding: 2.5rem; text-align: center; color: #8a8578; }
+  footer { margin-top: 1.25rem; font-size: 0.78rem; color: #8a8578; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Smitten Kitchen recipe picks — diabetic-friendly &amp; vegetarian</h1>
+    <p class="sub">36 recipes from <a href="https://smittenkitchen.com" target="_blank" rel="noopener">smittenkitchen.com</a> that fit the house rules: vegetarian, protein-forward, low added sugar, common ingredients, and no seed oils (butter / ghee / olive oil only — needed swaps are listed per recipe). Click any row for modifications, carb notes, and a link to the recipe.</p>
+    <div class="legend">
+      <span><b>Packed-lunch rating:</b></span>
+      <span><b style="color:#256437">High</b> — eat cold, no fork needed</span>
+      <span><b style="color:#8a6414">Medium</b> — packs cold, needs a fork/spoon</span>
+      <span><b style="color:#75736a">Low</b> — really wants reheating &amp; a plate</span>
+    </div>
+  </header>
+
+  <div class="controls">
+    <input type="search" id="q" placeholder="Search recipes, proteins, ingredients…" aria-label="Search recipes">
+    <div class="btn-group" id="catBtns">
+      <button data-cat="all" class="active">All</button>
+      <button data-cat="supper">Supper</button>
+      <button data-cat="batch">Batch / make-ahead</button>
+      <button data-cat="packable-lunch">Packable lunch</button>
+    </div>
+    <select id="prot" aria-label="Filter by protein type">
+      <option value="all">Any protein</option>
+      <option value="legumes">Beans &amp; lentils</option>
+      <option value="eggs">Eggs</option>
+      <option value="cheese">Cheese / halloumi</option>
+      <option value="combo">Combination</option>
+    </select>
+    <div class="btn-group" id="rateBtns">
+      <button data-rate="all" class="active">Any lunch rating</button>
+      <button data-rate="high">High</button>
+      <button data-rate="medium">Medium</button>
+      <button data-rate="low">Low</button>
+    </div>
+    <button class="reset" id="reset">Reset</button>
+  </div>
+
+  <div class="count" id="count"></div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th data-sort="title">Recipe <span class="arrow"></span></th>
+          <th data-sort="min">Prep / total time <span class="arrow"></span></th>
+          <th data-sort="protein">Primary protein <span class="arrow"></span></th>
+          <th data-sort="lunch">Packed lunch <span class="arrow"></span></th>
+          <th data-sort="mods">Mods needed <span class="arrow"></span></th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+
+  <footer>Times are as stated on each recipe page; “~” marks estimates where the page gives none. “+ overnight” flags soak/chill time. Compiled July 6, 2026. Minor modifications (oil swaps, sugar omissions, carb-side suggestions) are listed inside each row.</footer>
+</div>
+
+<script>
+const DATA = [
+  // ---- Legume mains, soups & stews ----
+  { title: "Chana Masala", url: "https://smittenkitchen.com/2010/02/chana-masala/", time: "~45 min", est: true, extra: "", min: 45,
+    servings: "About 4 as a main", protein: "Chickpeas", group: "legumes", lunch: "medium",
+    cats: ["supper","batch","packable-lunch"],
+    mods: ["Swap the 1 tbsp vegetable oil for ghee or olive oil", "Amchoor can be replaced with lemon juice (substitution given in the recipe)"],
+    carb: "Chickpeas are low-GI, no added sugar; keep the rice portion small or use yogurt raita instead.",
+    note: "One of SK's most popular recipes ever — a tangy Madhur Jaffrey-style chickpea stew from pantry spices." },
+  { title: "Punjabi-Style Black Lentil Dal", url: "https://smittenkitchen.com/2017/03/punjabi-style-black-lentil-dal/", time: "1 hr", est: false, extra: "", min: 60,
+    servings: "4", protein: "Black lentils + butter/cream", group: "legumes", lunch: "low",
+    cats: ["supper","batch"],
+    mods: ["Recipe offers oil or butter/ghee — choose butter or ghee"],
+    carb: "Low-GI lentils, no added sugar; skip or minimize the naan/rice alongside.",
+    note: "A weeknight dal makhani — creamy, deeply spiced black lentils that reheat beautifully." },
+  { title: "Everyday Yellow Dal", url: "https://smittenkitchen.com/2007/06/everyday-yellow-dal/", time: "1 hr", est: false, extra: "+ soak", min: 60,
+    servings: "4, generously", protein: "Yellow split peas", group: "legumes", lunch: "low",
+    cats: ["supper","batch"],
+    mods: ["Swap the 1/4 cup canola oil for ghee or olive oil (butter already finishes it)"],
+    carb: "Split peas are low-GI, no added sugar; serve with a small basmati portion or none.",
+    note: "Deb's go-to simple tempered dal — tomato-simmered split peas with sizzled cumin, onion, and garlic." },
+  { title: "Curried Lentils and Sweet Potatoes", url: "https://smittenkitchen.com/2007/11/curried-lentils-and-sweet-potatoes/", time: "~1 hr", est: false, extra: "", min: 60,
+    servings: "6 main-course servings", protein: "Brown/green lentils", group: "legumes", lunch: "medium",
+    cats: ["supper","batch"],
+    mods: [],
+    carb: "The sweet potatoes add a real carb load — keep portions moderate; lentils, chard, and fat slow the hit, and no rice is needed.",
+    note: "One-pot garam masala lentil stew with sweet potato and Swiss chard — a complete meal on its own." },
+  { title: "Red Kidney Bean Curry (Rajma)", url: "https://smittenkitchen.com/2009/02/red-kidney-bean-curry/", time: "20 min", est: false, extra: "", min: 20,
+    servings: "6", protein: "Kidney beans", group: "legumes", lunch: "medium",
+    cats: ["supper","batch","packable-lunch"],
+    mods: [],
+    carb: "Beans are low-GI, no added sugar; keep the rice small and add a yogurt dollop for extra protein.",
+    note: "A fast pantry curry made entirely in olive oil — one of the quickest legume mains on the site." },
+  { title: "Split Pea Soup", url: "https://smittenkitchen.com/2018/01/split-pea-soup/", time: "70 min", est: false, extra: "", min: 70,
+    servings: "6", protein: "Green split peas", group: "legumes", lunch: "low",
+    cats: ["supper","batch"],
+    mods: ["Skip the optional bacon finish (use the parsley sauce or sour cream)", "Skip croutons to cut carbs"],
+    carb: "Split peas are low-GI; no starch beyond the peas themselves.",
+    note: "A leek-heavy vegetarian split pea soup — very thick, freezes well, Instant Pot directions included. ~17-19g protein per serving." },
+  { title: "Three-Bean Chili", url: "https://smittenkitchen.com/2014/04/three-bean-chili/", time: "~3 hr stovetop", est: true, extra: "faster in pressure cooker", min: 180,
+    servings: "8 smaller or 4-6 large servings", protein: "Kidney, black + pinto beans", group: "legumes", lunch: "medium",
+    cats: ["supper","batch","packable-lunch"],
+    mods: ["Optionally replace the bottle of beer with broth to trim carbs"],
+    carb: "All-bean, no added sugar; skip rice/tortillas and top with sour cream, cheese, and lime instead.",
+    note: "Deb's all-purpose vegetarian chili from dried beans — stovetop, slow-cooker, and pressure-cooker methods." },
+  { title: "Black Bean Soup + Toasted Cumin Seed Crema", url: "https://smittenkitchen.com/2010/01/black-bean-soup-toasted-cumin-seed-crema/", time: "~2-3 hr stovetop", est: true, extra: "~30 min pressure cooker", min: 150,
+    servings: "6 as a main", protein: "Black beans", group: "legumes", lunch: "low",
+    cats: ["supper","batch"],
+    mods: [],
+    carb: "Dried black beans, peppers, and water — low-GI, no added sugar; the crema adds fat and protein, not carbs.",
+    note: "Smoky chipotle black bean soup, partially pureed, finished with toasted-cumin crema. Fully vegetarian as written." },
+  { title: "Chard and White Bean Stew", url: "https://smittenkitchen.com/2011/01/chard-and-white-bean-stew/", time: "~45 min", est: true, extra: "", min: 45,
+    servings: "4 to 6", protein: "White beans (+ optional egg)", group: "legumes", lunch: "medium",
+    cats: ["supper","batch"],
+    mods: ["Skip or minimize the toasted bread; add the suggested poached egg for protein instead"],
+    carb: "Beans, chard, and broth are all low-GI; the optional grilled bread is the only carb concern.",
+    note: "Cozy tomato-y white bean and chard stew in olive oil — classic SK winter comfort food." },
+  { title: "Tangy Braised Chickpeas", url: "https://smittenkitchen.com/2020/09/tangy-braised-chickpeas/", time: "2 hr", est: false, extra: "", min: 120,
+    servings: "4 to 6", protein: "Chickpeas + mushrooms", group: "legumes", lunch: "medium",
+    cats: ["supper","batch"],
+    mods: ["Reduce or omit the 1 1/2 tbsp brown sugar", "Use soy sauce instead of Worcestershire (which contains anchovy)"],
+    carb: "Skip the suggested challah/noodles/mash — serve over a small rice portion or roasted vegetables.",
+    note: "Brisket-style oven-braised chickpeas with carrots and mushrooms — Sunday-braise flavors, vegetarian." },
+  { title: "Spinach and Chickpeas", url: "https://smittenkitchen.com/2010/03/spinach-and-chickpeas/", time: "~40 min", est: true, extra: "", min: 40,
+    servings: "4", protein: "Chickpeas", group: "legumes", lunch: "medium",
+    cats: ["supper","packable-lunch"],
+    mods: ["Skip the extra fried-bread toasts alongside (a single slice is mashed into the sauce itself)"],
+    carb: "Mostly chickpeas and spinach in olive oil; one slice of bread across 4 servings.",
+    note: "Espinacas con garbanzos, the Sevillian tapas classic — smoky, garlicky, excellent warm or at room temperature." },
+  { title: "Fast White Bean Stew", url: "https://smittenkitchen.com/2008/03/fast-white-bean-stew/", time: "~20 min", est: true, extra: "", min: 20,
+    servings: "About 4", protein: "Cannellini beans", group: "legumes", lunch: "medium",
+    cats: ["supper","batch","packable-lunch"],
+    mods: ["Omit the ham (Deb notes it's easily skipped)", "Use vegetable broth", "Skip or limit the baguette toasts"],
+    carb: "Beans, stewed tomatoes, and greens are low-GI; the baguette on the side is the carb to watch.",
+    note: "A 20-minute pantry stew of white beans, tomatoes, and greens — the fastest legume main on the site." },
+
+  // ---- Egg & dairy mains ----
+  { title: "Shakshuka", url: "https://smittenkitchen.com/2010/04/shakshuka/", time: "45 min", est: false, extra: "", min: 45,
+    servings: "3 to 6", protein: "Eggs + feta", group: "eggs", lunch: "low",
+    cats: ["supper"],
+    mods: [],
+    carb: "The tomato-pepper sauce is very low-carb; the pita for serving is optional — skip it or use a low-carb dipper.",
+    note: "SK's classic version of eggs poached in spicy cumin-paprika tomato sauce, finished with feta." },
+  { title: "Chickpea and Kale Shakshuka", url: "https://smittenkitchen.com/2019/10/chickpea-and-kale-shakshuka/", time: "45 min", est: false, extra: "", min: 45,
+    servings: "4 to 6", protein: "Eggs + feta + chickpeas", group: "combo", lunch: "low",
+    cats: ["supper","batch"],
+    mods: [],
+    carb: "Chickpeas are the main carb but come with lots of fiber; skip the optional pita.",
+    note: "A heartier one-skillet shakshuka bulked up with chickpeas and kale — sauce base keeps well, eggs poach fresh. ~20-25g protein per serving." },
+  { title: "Spinach and Cheese Strata", url: "https://smittenkitchen.com/2009/12/spinach-and-cheese-strata/", time: "~1.5 hr", est: true, extra: "+ overnight chill", min: 90,
+    servings: "6 to 8", protein: "Eggs + Gruyère/Parmesan", group: "eggs", lunch: "medium",
+    cats: ["supper","batch"],
+    mods: ["Use less bread (or a smaller pan) to lower the carb load"],
+    carb: "The 8 cups of bread cubes are the main carb — moderate per slice, and easy to scale down.",
+    note: "Make-ahead savory bread pudding with spinach and Dijon custard — one of SK's most popular brunch mains, reheats well. ~20g protein per serving." },
+  { title: "Corn, Cheddar and Scallion Strata", url: "https://smittenkitchen.com/2014/09/corn-cheddar-and-scallion-strata/", time: "~1.5 hr", est: true, extra: "+ 1 hr soak", min: 90,
+    servings: "6 to 8", protein: "Eggs + cheddar/Parmesan", group: "eggs", lunch: "medium",
+    cats: ["supper","batch","packable-lunch"],
+    mods: ["Use less bread to lower the carb load"],
+    carb: "Bread plus corn make this the highest-carb pick here — keep portions moderate or trim the bread.",
+    note: "Deb pitches this one specifically as packed-lunch friendly — freezes well, reheats well, holds warmth for hours." },
+  { title: "Spinach Sheet Pan Quiche", url: "https://smittenkitchen.com/2016/11/spinach-sheet-pan-quiche/", time: "1-1¼ hr", est: false, extra: "", min: 75,
+    servings: "12 to 16 squares", protein: "Eggs + three cheeses", group: "eggs", lunch: "high",
+    cats: ["supper","batch","packable-lunch"],
+    mods: ["Grease the pan with butter instead of nonstick spray", "The thin crust is the main carb — roll it thin or trim portions"],
+    carb: "One thin butter crust across a whole sheet pan, so per-square carbs are modest.",
+    note: "A sturdy spinach-packed slab quiche, good at room temperature or cold — ideal cut into hand-held squares for lunchboxes." },
+  { title: "Over-the-Top Mushroom Quiche", url: "https://smittenkitchen.com/2012/04/over-the-top-mushroom-quiche/", time: "~3 hr", est: true, extra: "incl. chilling", min: 180,
+    servings: "12 slices", protein: "Eggs + cream + Gruyère", group: "eggs", lunch: "medium",
+    cats: ["supper","batch"],
+    mods: ["Use butter or olive oil instead of the neutral oil for the pan and mushrooms"],
+    carb: "Very low-carb filling (custard + 2 lbs mushrooms); the pastry shell is the only real carb.",
+    note: "A towering Thomas Keller-style deep-dish mushroom quiche — rich, custardy, freezer-friendly by the slice." },
+  { title: "Zucchini and Ricotta Galette", url: "https://smittenkitchen.com/2010/06/zucchini-and-ricotta-galette/", time: "~2.5 hr", est: true, extra: "incl. dough chilling", min: 150,
+    servings: "6 to 8", protein: "Ricotta + Parmesan + mozzarella", group: "cheese", lunch: "high",
+    cats: ["supper","packable-lunch"],
+    mods: [],
+    carb: "No added sugar; the flaky butter crust is the main carb — moderate shared 6-8 ways.",
+    note: "SK's signature summer savory galette — a three-cheese base under shingled zucchini, hand-holdable and good at room temperature." },
+  { title: "Halloumi and Fall Vegetable Roast", url: "https://smittenkitchen.com/2024/11/halloumi-and-fall-vegetable-roast/", time: "50 min", est: false, extra: "", min: 50,
+    servings: "2 as a main", protein: "Halloumi", group: "cheese", lunch: "low",
+    cats: ["supper"],
+    mods: ["Omit or halve the honey/maple in the balsamic glaze", "Swap some sweet potato for cauliflower or brussels sprouts to cut carbs"],
+    carb: "Sweet potatoes and the glaze carry the carbs; both easy to reduce — the rest is low-carb roasted vegetables.",
+    note: "One-sheet-pan supper of charred fall vegetables with crispy-edged halloumi (~25g protein per main serving); halloumi is best hot." },
+  { title: "Shaved Asparagus Frittata", url: "https://smittenkitchen.com/2016/04/shaved-asparagus-frittata/", time: "~20 min", est: false, extra: "", min: 20,
+    servings: "6 dinner wedges", protein: "Eggs + goat cheese", group: "eggs", lunch: "high",
+    cats: ["supper","packable-lunch"],
+    mods: ["Omit the prosciutto (already listed as optional)"],
+    carb: "Essentially no-carb — eggs, asparagus ribbons, and goat cheese in olive oil.",
+    note: "A 20-minute broiler-finished spring frittata; wedges hold together well cold for a hand-held lunch." },
+  { title: "Potato and Broccolini Frittata", url: "https://smittenkitchen.com/2013/10/potato-and-broccolini-frittata/", time: "~45 min", est: true, extra: "", min: 45,
+    servings: "6 to 10 portions", protein: "Eggs + Parmesan", group: "eggs", lunch: "high",
+    cats: ["supper","batch","packable-lunch"],
+    mods: [],
+    carb: "The small waxy potatoes are the main carb — moderate, and easy to use fewer.",
+    note: "Vegetable-loaded dinner frittata with a broiled Parmesan crust; Deb notes it makes great sandwich filling the next day." },
+  { title: "Baked Eggs with Spinach and Mushrooms", url: "https://smittenkitchen.com/2014/04/baked-eggs-with-spinach-and-mushrooms/", time: "~1 hr", est: true, extra: "", min: 60,
+    servings: "6 to 12", protein: "Eggs + cream + Parmesan", group: "eggs", lunch: "low",
+    cats: ["supper"],
+    mods: [],
+    carb: "Naturally very low-carb and gluten-free — just eggs, creamed spinach, and mushrooms; no bread or crust.",
+    note: "Eggs baked in wells of creamy spinach and mushrooms — one of the most diabetic-friendly dishes on the site, but wants to be eaten hot." },
+  { title: "Baked Feta with Tomatoes and Chickpeas", url: "https://smittenkitchen.com/2021/02/baked-feta-with-tomatoes-and-chickpeas/", time: "35 min", est: false, extra: "", min: 35,
+    servings: "4", protein: "Feta (8-oz block) + chickpeas", group: "combo", lunch: "medium",
+    cats: ["supper","batch"],
+    mods: [],
+    carb: "Chickpeas are the main carb (moderate, high-fiber); skip the flatbread and eat as a spoonable stew.",
+    note: "SK's take on the viral baked feta — broiler-blistered with burst tomatoes and chickpeas in olive oil; packs fine as a fork lunch at room temp." },
+
+  // ---- Salads, patties & packable ----
+  { title: "My Favorite Lentil Salad", url: "https://smittenkitchen.com/2022/01/my-favorite-lentil-salad/", time: "15 min", est: false, extra: "with cooked lentils", min: 15,
+    servings: "4 to 6", protein: "Lentils", group: "legumes", lunch: "medium",
+    cats: ["batch","packable-lunch"],
+    mods: [],
+    carb: "Low-GI lentils and tomatoes; skip or limit the optional tortilla chips.",
+    note: "Deb's stated meal-prep favorite with a blended tomato-jalapeño dressing; keeps 5 days (pack avocado separately)." },
+  { title: "Lentil and Chickpea Salad with Feta and Tahini", url: "https://smittenkitchen.com/2013/04/lentil-and-chickpea-salad-with-feta-and-tahini/", time: "~45 min", est: true, extra: "", min: 45,
+    servings: "3 as a main", protein: "Lentils + chickpeas + feta", group: "combo", lunch: "medium",
+    cats: ["supper","batch","packable-lunch"],
+    mods: [],
+    carb: "All-legume base with no added sugar — slow-digesting carbs throughout.",
+    note: "Ottolenghi-style double-legume salad in tahini and olive oil; flavors meld and improve overnight. ~15-18g protein as a main." },
+  { title: "Carrot and White Bean Burgers", url: "https://smittenkitchen.com/2020/03/carrot-and-white-bean-burgers/", time: "1 hr", est: false, extra: "", min: 60,
+    servings: "6 patties", protein: "White beans + egg", group: "legumes", lunch: "high",
+    cats: ["supper","batch","packable-lunch"],
+    mods: ["Skip the bun, or use a whole-grain bun / lettuce wrap"],
+    carb: "Only 1/2 cup panko across 6 patties; the bun is the main carb decision.",
+    note: "Cooked in olive oil as written, explicitly good hot or at room temperature; patties freeze and cook straight from frozen. ~12g protein per patty." },
+  { title: "Falafel", url: "https://smittenkitchen.com/2018/12/falafel/", time: "30 min", est: false, extra: "+ overnight soak", min: 30,
+    servings: "19 falafel (4-6 in pitas)", protein: "Chickpeas", group: "legumes", lunch: "high",
+    cats: ["supper","batch","packable-lunch"],
+    mods: ["Fry in olive oil instead of the peanut/vegetable oil called for", "Use whole-grain pita or serve over salad with tahini sauce"],
+    carb: "The fritters are all chickpea; the pita is the main carb — go whole-grain or pita-less.",
+    note: "Classic from-scratch dried-chickpea falafel; Deb recommends doubling to stock the freezer (fried or raw both freeze well)." },
+  { title: "Smashed Chickpea Salad", url: "https://smittenkitchen.com/2009/01/smashed-chickpea-salad/", time: "10 min", est: false, extra: "", min: 10,
+    servings: "2 salads / 4 toasts", protein: "Chickpeas", group: "legumes", lunch: "high",
+    cats: ["batch","packable-lunch"],
+    mods: [],
+    carb: "Chickpeas only, no added sugar; serve on whole-grain toast or as a lettuce-cup/pita filling.",
+    note: "Lemony chickpea-'tuna'-style sandwich filling with olives and olive oil — ready in 10 minutes, keeps several days." },
+  { title: "Egg Salad with Pickled Celery and Coarse Dijon", url: "https://smittenkitchen.com/2013/02/egg-salad-with-pickled-celery-and-coarse-dijon/", time: "25 min", est: true, extra: "+ 30-60 min pickle", min: 25,
+    servings: "2 generous sandwiches", protein: "Eggs", group: "eggs", lunch: "high",
+    cats: ["packable-lunch"],
+    mods: ["Omit or halve the 1 1/2 tsp sugar in the pickling brine", "Use the plain-yogurt option or an olive-oil mayo instead of standard mayonnaise"],
+    carb: "Essentially no-carb filling; the bread is the carb, so use whole-grain (as the page itself suggests).",
+    note: "SK's classic egg salad kept crunchy with quick-pickled celery; the pickled celery holds a week in the fridge." },
+  { title: "Ethereally Smooth Hummus", url: "https://smittenkitchen.com/2013/01/ethereally-smooth-hummus/", time: "~45 min", est: true, extra: "with canned chickpeas", min: 45,
+    servings: "Makes 1¾ cups", protein: "Chickpeas + tahini", group: "legumes", lunch: "high",
+    cats: ["batch","packable-lunch"],
+    mods: [],
+    carb: "Chickpea-and-tahini only, no sweeteners; dip with vegetable sticks rather than pita, or use whole-grain pita wedges.",
+    note: "SK's famous peeled-chickpea hummus (olive oil only as a finishing drizzle) — the ideal protein-forward dip for a veggie-stick lunchbox." },
+  { title: "Bean and Vegetable Burritos", url: "https://smittenkitchen.com/2023/03/bean-and-vegetable-burritos/", time: "45 min", est: false, extra: "+ reheating", min: 45,
+    servings: "8 burritos", protein: "Beans + cotija/jack cheese", group: "combo", lunch: "medium",
+    cats: ["supper","batch","packable-lunch"],
+    mods: ["Use the olive oil option, not vegetable oil", "Swap in whole-grain or low-carb tortillas"],
+    carb: "The large flour tortilla is the main carb load — a whole-grain or low-carb tortilla helps a lot.",
+    note: "Fully vegetarian make-ahead freezer burritos designed for wrapped grab-and-go lunches; hand-held but best reheated. ~15g protein each." },
+  { title: "Kale and Quinoa Salad with Ricotta Salata", url: "https://smittenkitchen.com/2014/03/kale-and-quinoa-salad-with-ricotta-salata/", time: "~30 min", est: true, extra: "", min: 30,
+    servings: "2-3 meal salads", protein: "Quinoa + almonds + ricotta salata", group: "combo", lunch: "medium",
+    cats: ["batch","packable-lunch"],
+    mods: ["Omit the honey in the dressing", "Reduce or omit the dried cherries (concentrated sugar)"],
+    carb: "Quinoa is a moderate whole-grain carb; with honey and dried fruit omitted the salad is low-sugar.",
+    note: "Sturdy raw-kale grain salad that survives being dressed ahead; components prep days out." },
+  { title: "Broccoli Parmesan Fritters", url: "https://smittenkitchen.com/2012/06/broccoli-parmesan-fritters/", time: "~35 min", est: true, extra: "", min: 35,
+    servings: "9 fritters", protein: "Egg + Parmesan (+ yogurt dip)", group: "combo", lunch: "high",
+    cats: ["batch","packable-lunch"],
+    mods: ["Use the olive oil option, not vegetable oil", "Pack with the page's garlicky lemon yogurt (use Greek) to boost protein"],
+    carb: "Just 1/2 cup flour across 9 fritters — low-carb as fritters go, no sweeteners.",
+    note: "One of SK's most popular fritters — egg-and-Parmesan bound rather than starchy; they freeze and re-crisp well." },
+  { title: "Cauliflower-Feta Fritters with Pomegranate", url: "https://smittenkitchen.com/2012/12/cauliflower-feta-fritters-with-pomegranate/", time: "~45 min", est: true, extra: "", min: 45,
+    servings: "18 fritters", protein: "Egg + feta (+ cumin yogurt)", group: "combo", lunch: "high",
+    cats: ["batch","packable-lunch"],
+    mods: ["Skip or minimize the pomegranate arils (sugar) — the cumin yogurt alone is plenty"],
+    carb: "Only 1/2 cup flour across 18 fritters; the optional pomegranate garnish is the only sugar source.",
+    note: "Feta-studded cauliflower fritters fried in olive oil as written, with a cumin-yogurt dip; the page says they freeze and reheat well." },
+  { title: "Broccoli Rubble Farro Salad", url: "https://smittenkitchen.com/2017/05/broccoli-rubble-farro-salad/", time: "45 min", est: false, extra: "", min: 45,
+    servings: "2 robust or 4 petite", protein: "Pecorino + farro", group: "combo", lunch: "medium",
+    cats: ["supper","batch","packable-lunch"],
+    mods: ["Optional: top with a hard-boiled egg (the page suggests it) for extra protein"],
+    carb: "Farro is an intact, fiber-rich whole grain — a moderate portion is a reasonable carb choice.",
+    note: "Finely chopped broccoli and pecorino tossed with farro in olive oil and lemon — explicitly billed as picnic- and room-temperature-friendly." }
+];
+
+const RATE_ORDER = { high: 0, medium: 1, low: 2 };
+const RATE_LABEL = { high: "High", medium: "Medium", low: "Low" };
+const CAT_LABEL = { "supper": "Supper", "batch": "Batch", "packable-lunch": "Packable lunch" };
+
+let state = { q: "", cat: "all", prot: "all", rate: "all", sortKey: "lunch", sortDir: 1, open: new Set() };
+
+const rowsEl = document.getElementById("rows");
+const countEl = document.getElementById("count");
+
+function esc(s) {
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+function filtered() {
+  const q = state.q.trim().toLowerCase();
+  let list = DATA.filter(r => {
+    if (state.cat !== "all" && !r.cats.includes(state.cat)) return false;
+    if (state.prot !== "all" && r.group !== state.prot) return false;
+    if (state.rate !== "all" && r.lunch !== state.rate) return false;
+    if (q) {
+      const hay = (r.title + " " + r.protein + " " + r.note + " " + r.carb + " " + r.mods.join(" ")).toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+  const k = state.sortKey, d = state.sortDir;
+  list.sort((a, b) => {
+    let va, vb;
+    if (k === "lunch") { va = RATE_ORDER[a.lunch]; vb = RATE_ORDER[b.lunch]; }
+    else if (k === "min") { va = a.min; vb = b.min; }
+    else if (k === "mods") { va = a.mods.length; vb = b.mods.length; }
+    else { va = a[k].toLowerCase(); vb = b[k].toLowerCase(); }
+    if (va < vb) return -1 * d;
+    if (va > vb) return 1 * d;
+    return a.min - b.min;
+  });
+  return list;
+}
+
+function render() {
+  const list = filtered();
+  countEl.textContent = "Showing " + list.length + " of " + DATA.length + " recipes" +
+    (state.sortKey === "lunch" && state.sortDir === 1 ? " — sorted by packed-lunch rating (click column headers to re-sort)" : "");
+  document.querySelectorAll("thead th").forEach(th => {
+    const arrow = th.querySelector(".arrow");
+    arrow.textContent = th.dataset.sort === state.sortKey ? (state.sortDir === 1 ? "▲" : "▼") : "";
+  });
+  if (!list.length) {
+    rowsEl.innerHTML = '<tr><td colspan="5" class="empty">No recipes match — try clearing a filter.</td></tr>';
+    return;
+  }
+  rowsEl.innerHTML = list.map(r => {
+    const isOpen = state.open.has(r.url);
+    const cats = r.cats.map(c => '<span class="cat">' + CAT_LABEL[c] + "</span>").join("");
+    const modFlag = r.mods.length === 0
+      ? '<span class="modflag none">None — fits as written</span>'
+      : '<span class="modflag">' + r.mods.length + " minor swap" + (r.mods.length > 1 ? "s" : "") + "</span>";
+    const main =
+      '<tr class="main' + (isOpen ? " open" : "") + '" data-url="' + esc(r.url) + '">' +
+      '<td class="recipe"><span class="chev">▶</span><span class="title">' + esc(r.title) + '</span><div class="cats">' + cats + "</div></td>" +
+      '<td class="time">' + esc(r.time) + (r.est ? ' <span class="est">est.</span>' : "") + (r.extra ? '<span class="extra">' + esc(r.extra) + "</span>" : "") + "</td>" +
+      "<td>" + esc(r.protein) + "</td>" +
+      '<td><span class="badge ' + r.lunch + '">' + RATE_LABEL[r.lunch] + "</span></td>" +
+      "<td>" + modFlag + "</td></tr>";
+    if (!isOpen) return main;
+    const mods = r.mods.length
+      ? "<ul>" + r.mods.map(m => "<li>" + esc(m) + "</li>").join("") + "</ul>"
+      : "<p>No changes needed — fits the requirements as written.</p>";
+    const details =
+      '<tr class="details"><td colspan="5"><div class="grid">' +
+      "<div><h4>About</h4><p>" + esc(r.note) + "</p><h4 style=\"margin-top:0.6rem\">Servings</h4><p>" + esc(r.servings) + "</p></div>" +
+      "<div><h4>Modifications for our requirements</h4>" + mods + "</div>" +
+      "<div><h4>Carb / blood-sugar note</h4><p>" + esc(r.carb) + "</p></div>" +
+      '</div><a class="visit" href="' + esc(r.url) + '" target="_blank" rel="noopener">View recipe on smittenkitchen.com →</a></td></tr>';
+    return main + details;
+  }).join("");
+}
+
+rowsEl.addEventListener("click", e => {
+  if (e.target.closest("a")) return;
+  const tr = e.target.closest("tr.main");
+  if (!tr) return;
+  const url = tr.dataset.url;
+  state.open.has(url) ? state.open.delete(url) : state.open.add(url);
+  render();
+});
+
+document.getElementById("q").addEventListener("input", e => { state.q = e.target.value; render(); });
+document.getElementById("prot").addEventListener("change", e => { state.prot = e.target.value; render(); });
+
+function wireButtons(containerId, attr, key) {
+  const box = document.getElementById(containerId);
+  box.addEventListener("click", e => {
+    const btn = e.target.closest("button");
+    if (!btn) return;
+    state[key] = btn.dataset[attr];
+    box.querySelectorAll("button").forEach(b => b.classList.toggle("active", b === btn));
+    render();
+  });
+}
+wireButtons("catBtns", "cat", "cat");
+wireButtons("rateBtns", "rate", "rate");
+
+document.querySelectorAll("thead th").forEach(th => {
+  th.addEventListener("click", () => {
+    const k = th.dataset.sort;
+    if (state.sortKey === k) state.sortDir *= -1;
+    else { state.sortKey = k; state.sortDir = 1; }
+    render();
+  });
+});
+
+document.getElementById("reset").addEventListener("click", () => {
+  state = { q: "", cat: "all", prot: "all", rate: "all", sortKey: "lunch", sortDir: 1, open: new Set() };
+  document.getElementById("q").value = "";
+  document.getElementById("prot").value = "all";
+  document.querySelectorAll("#catBtns button").forEach(b => b.classList.toggle("active", b.dataset.cat === "all"));
+  document.querySelectorAll("#rateBtns button").forEach(b => b.classList.toggle("active", b.dataset.rate === "all"));
+  render();
+});
+
+render();
+</script>
+</body>
+</html>
