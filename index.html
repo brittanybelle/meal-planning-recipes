@@ -121,6 +121,79 @@
     tr.details td { display: block; padding: 0.9rem 1rem 1.1rem; border-top: 1px dashed #e5e0d5; }
     .empty { border: 1px solid #e5e0d5; border-radius: 12px; background: #fff; }
   }
+
+  /* --- recipe selection + grocery list --- */
+  th.selh { width: 2.2rem; cursor: default; }
+  td.sel { width: 2.2rem; text-align: center; padding-right: 0.2rem; }
+  .selbox { width: 1.1rem; height: 1.1rem; accent-color: #3a7d54; cursor: pointer; }
+  .selbar {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 60;
+    background: #2f4a3a; color: #fff; padding: 0.65rem 1rem;
+    display: flex; gap: 0.8rem; align-items: center; justify-content: center; flex-wrap: wrap;
+    box-shadow: 0 -2px 12px rgba(0,0,0,0.18);
+  }
+  .selbar.hidden { display: none; }
+  .selbar .n { font-weight: 600; font-size: 0.9rem; }
+  .selbar button { border: none; border-radius: 8px; padding: 0.55rem 1.1rem; font-size: 0.9rem; cursor: pointer; }
+  .selbar .gen { background: #e9c46a; color: #2b2b28; font-weight: 700; }
+  .selbar .gen:hover { background: #f0d187; }
+  .selbar .clear { background: transparent; color: #cfe0d5; text-decoration: underline; }
+  #grocery { display: none; }
+  body.grocery-open #listui { display: none; }
+  body.grocery-open #grocery {
+    display: block; background: #fff; border: 1px solid #e5e0d5; border-radius: 12px;
+    padding: 1.25rem 1.4rem 1.5rem; margin-top: 1.4rem;
+  }
+  #grocery h2 { color: #2f4a3a; font-size: 1.35rem; }
+  .gsub { color: #6b6a63; font-size: 0.85rem; margin-top: 0.3rem; }
+  .gactions { display: flex; gap: 0.6rem; flex-wrap: wrap; margin: 1rem 0 0.4rem; }
+  .gactions button {
+    padding: 0.5rem 1rem; border: 1px solid #d8d2c4; border-radius: 8px;
+    background: #fdfcf9; font-size: 0.88rem; cursor: pointer; color: #3d3c36;
+  }
+  .gactions button:hover { border-color: #3a7d54; }
+  .gsec h3 {
+    font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.07em; color: #3a7d54;
+    border-bottom: 2px solid #e5e0d5; padding-bottom: 0.3rem; margin: 1.3rem 0 0.4rem;
+  }
+  .gitem {
+    display: flex; gap: 0.65rem; align-items: baseline; padding: 0.42rem 0.15rem;
+    border-bottom: 1px dashed #eee9dd; cursor: pointer; font-size: 0.9rem;
+  }
+  .gitem input { width: 1.05rem; height: 1.05rem; accent-color: #3a7d54; flex: 0 0 auto; position: relative; top: 0.15rem; }
+  .gitem .from { color: #8a8578; font-size: 0.76rem; }
+  .gitem .gnote, .gitem .plus { color: #8a8578; font-size: 0.8rem; }
+  .gitem.checked .gtext { text-decoration: line-through; color: #a09a89; }
+  .gmiss { margin-top: 1rem; color: #a05c2b; font-size: 0.85rem; }
+  .gfoot { margin-top: 1.1rem; color: #8a8578; font-size: 0.78rem; }
+
+  /* expandable ingredient list inside row details */
+  .ing { margin-top: 0.9rem; }
+  .ing summary { cursor: pointer; font-size: 0.8rem; font-weight: 600; color: #3a7d54; }
+  .ing ul { padding: 0.4rem 0 0 1.2rem; }
+  .ing li { padding: 0.12rem 0; font-size: 0.84rem; }
+  .ing em { color: #8a8578; }
+
+  @media (max-width: 720px) {
+    body { padding-bottom: 5.5rem; } /* room for the selection bar */
+    tbody tr.main { position: relative; }
+    td.sel { display: block; position: absolute; top: 0.55rem; right: 0.55rem; width: auto; padding: 0; }
+    .selbox { width: 1.35rem; height: 1.35rem; }
+    td.recipe { padding-right: 3.1rem; }
+    .selbar button { padding: 0.65rem 1rem; }
+    body.grocery-open #grocery { padding: 1rem; }
+  }
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    .selbar { display: none !important; }
+    .controls, .count { display: none; }
+    .table-wrap { border: none; }
+    body.grocery-open header, body.grocery-open footer { display: none; }
+    body.grocery-open #grocery { border: none; padding: 0; margin: 0; }
+    .gactions { display: none; }
+    .gitem { page-break-inside: avoid; }
+  }
 </style>
 </head>
 <body>
@@ -136,6 +209,7 @@
     </div>
   </header>
 
+  <div id="listui">
   <div class="controls">
     <input type="search" id="q" placeholder="Search recipes, proteins, ingredients…" aria-label="Search recipes">
     <div class="btn-group" id="catBtns">
@@ -172,6 +246,7 @@
     <table>
       <thead>
         <tr>
+          <th class="selh" aria-label="Select"></th>
           <th data-sort="title">Recipe <span class="arrow"></span></th>
           <th data-sort="min">Prep / total time <span class="arrow"></span></th>
           <th data-sort="protein">Primary protein <span class="arrow"></span></th>
@@ -182,8 +257,17 @@
       <tbody id="rows"></tbody>
     </table>
   </div>
+  </div><!-- /listui -->
+
+  <section id="grocery" aria-label="Grocery list"></section>
 
   <footer>Times are as stated on each recipe page; “~” marks estimates where the page gives none. “+ overnight” flags soak/chill time. Compiled July 6, 2026. Minor modifications (oil swaps, sugar omissions, carb-side suggestions) are listed inside each row.</footer>
+</div>
+
+<div class="selbar hidden" id="selbar">
+  <span class="n"></span>
+  <button class="gen" id="genBtn">Generate grocery list 🛒</button>
+  <button class="clear" id="clearBtn">Clear selection</button>
 </div>
 
 <script>
@@ -411,11 +495,13 @@ const DATA = [
     note: "Finely chopped broccoli and pecorino tossed with farro in olive oil and lemon — explicitly billed as picnic- and room-temperature-friendly." }
 ];
 
+const INGREDIENTS = {"https://smittenkitchen.com/2010/02/chana-masala/":[{"key":"ghee","name":"ghee","qty":"1 tablespoon","section":"dairy","note":"swapped from vegetable oil"},{"key":"yellow-onion","name":"yellow onion","qty":"2 medium","section":"produce","note":null},{"key":"garlic","name":"garlic","qty":"1 clove","section":"produce","note":null},{"key":"fresh-ginger","name":"fresh ginger","qty":"2 teaspoons, grated","section":"produce","note":null},{"key":"green-chili","name":"hot green chili","qty":"1","section":"produce","note":null},{"key":"ground-coriander","name":"ground coriander","qty":"1 tablespoon","section":"pantry","note":null},{"key":"ground-cumin","name":"ground cumin","qty":"2 teaspoons","section":"pantry","note":null},{"key":"cayenne","name":"cayenne pepper","qty":"1/2 teaspoon (or less, to taste)","section":"pantry","note":null},{"key":"turmeric","name":"ground turmeric","qty":"1 teaspoon","section":"pantry","note":null},{"key":"cumin-seed","name":"cumin seeds","qty":"2 teaspoons (toasted and ground)","section":"pantry","note":null},{"key":"sweet-paprika","name":"paprika","qty":"2 teaspoons","section":"pantry","note":null},{"key":"garam-masala","name":"garam masala","qty":"1 teaspoon","section":"pantry","note":null},{"key":"canned-tomato","name":"canned whole tomatoes (15-oz can)","qty":"1 15-oz (425 g) can","section":"pantry","note":"or 2 cups fresh chopped tomatoes"},{"key":"canned-chickpea","name":"canned chickpeas (15-oz cans)","qty":"2 15-oz (425 g) cans","section":"pantry","note":"or 4 cups cooked"},{"key":"lemon","name":"lemon","qty":"1 whole, juiced","section":"produce","note":"instead of amchoor (per recipe note; covers the 1/2 lemon listed too)"}],"https://smittenkitchen.com/2017/03/punjabi-style-black-lentil-dal/":[{"key":"butter","name":"butter or ghee","qty":"2 tablespoons","section":"dairy","note":"recipe offers oil or butter/ghee; use butter or ghee"},{"key":"yellow-onion","name":"yellow onion","qty":"1 medium","section":"produce","note":null},{"key":"cumin-seed","name":"cumin seeds","qty":"1/2 teaspoon","section":"pantry","note":null},{"key":"fresh-ginger","name":"fresh ginger","qty":"1-inch piece","section":"produce","note":null},{"key":"garlic","name":"garlic","qty":"2 cloves","section":"produce","note":null},{"key":"ground-coriander","name":"ground coriander","qty":"1 teaspoon","section":"pantry","note":null},{"key":"turmeric","name":"ground turmeric","qty":"1/4 teaspoon","section":"pantry","note":null},{"key":"garam-masala","name":"garam masala","qty":"1/2 teaspoon","section":"pantry","note":"optional but traditional"},{"key":"red-chile-powder","name":"ground red chile powder","qty":"1/2 teaspoon, or to taste","section":"pantry","note":null},{"key":"canned-tomato","name":"finely chopped or pureed tomatoes (canned or fresh)","qty":"1 cup","section":"pantry","note":null},{"key":"black-lentil","name":"dried black lentils","qty":"1 cup","section":"pantry","note":null},{"key":"butter","name":"butter (salted)","qty":"4 teaspoons","section":"dairy","note":"to finish"},{"key":"heavy-cream","name":"heavy cream","qty":"2 tablespoons","section":"dairy","note":"to finish"},{"key":"cilantro","name":"fresh cilantro","qty":"handful, chopped","section":"produce","note":null}],"https://smittenkitchen.com/2007/06/everyday-yellow-dal/":[{"key":"yellow-split-pea","name":"dried yellow split peas","qty":"1 cup","section":"pantry","note":"soak 1 hour"},{"key":"tomato","name":"tomato","qty":"1 large (8 oz / 227 g)","section":"produce","note":null},{"key":"ghee","name":"ghee","qty":"1/4 cup","section":"dairy","note":"swapped from canola oil"},{"key":"cumin-seed","name":"cumin seeds","qty":"1/2 teaspoon","section":"pantry","note":null},{"key":"red-onion","name":"red onion","qty":"1 medium (about 1 1/2 cups chopped)","section":"produce","note":null},{"key":"garlic","name":"garlic","qty":"5 large cloves","section":"produce","note":null},{"key":"coriander-seed","name":"coriander seeds","qty":"1 teaspoon (finely ground)","section":"pantry","note":null},{"key":"turmeric","name":"ground turmeric","qty":"3/4 teaspoon","section":"pantry","note":null},{"key":"cayenne","name":"cayenne pepper","qty":"1/2 teaspoon (or less, to taste)","section":"pantry","note":null},{"key":"cilantro","name":"fresh cilantro","qty":"1/4 cup, minced","section":"produce","note":"or flat-leaf parsley"},{"key":"butter","name":"unsalted butter","qty":"1 tablespoon","section":"dairy","note":null}],"https://smittenkitchen.com/2007/11/curried-lentils-and-sweet-potatoes/":[{"key":"olive-oil","name":"olive oil","qty":"2 tablespoons","section":"pantry","note":null},{"key":"yellow-onion","name":"yellow onion","qty":"1 medium","section":"produce","note":null},{"key":"garlic","name":"garlic","qty":"4 cloves","section":"produce","note":null},{"key":"fresh-ginger","name":"fresh ginger","qty":"1-inch piece, peeled and grated","section":"produce","note":null},{"key":"garam-masala","name":"garam masala","qty":"1 1/2 teaspoons","section":"pantry","note":null},{"key":"curry-powder","name":"curry powder","qty":"1 1/2 teaspoons","section":"pantry","note":null},{"key":"jalapeno","name":"jalapeño pepper","qty":"1","section":"produce","note":null},{"key":"vegetable-broth","name":"vegetable broth","qty":"4 to 5 cups","section":"pantry","note":null},{"key":"sweet-potato","name":"sweet potatoes","qty":"2 lb / 908 g (about 4 cups cubed)","section":"produce","note":null},{"key":"brown-lentil","name":"dried lentils (brown or Le Puy)","qty":"1 1/2 cups","section":"pantry","note":null},{"key":"bay-leaf","name":"bay leaf","qty":"1","section":"pantry","note":null},{"key":"swiss-chard","name":"Swiss chard","qty":"1 lb / 454 g","section":"produce","note":null},{"key":"cilantro","name":"fresh cilantro","qty":"1/3 cup, chopped","section":"produce","note":null},{"key":"lime","name":"lime","qty":"1","section":"produce","note":"zest of 1 plus juice of 1/2"},{"key":"almond","name":"roasted or tamari almonds","qty":"1/3 cup, finely chopped","section":"nuts-seeds-bread","note":"optional garnish"},{"key":"scallion","name":"scallions","qty":"1/4 cup, thinly sliced","section":"produce","note":"garnish"}],"https://smittenkitchen.com/2009/02/red-kidney-bean-curry/":[{"key":"olive-oil","name":"extra virgin olive oil","qty":"1/3 cup (or less)","section":"pantry","note":null},{"key":"fresh-ginger","name":"fresh ginger","qty":"2 tablespoons, minced","section":"produce","note":null},{"key":"yellow-onion","name":"yellow onion","qty":"1 medium","section":"produce","note":null},{"key":"tomato","name":"plum tomato","qty":"1, diced","section":"produce","note":null},{"key":"garlic","name":"garlic","qty":"3 cloves","section":"produce","note":null},{"key":"green-chili","name":"large green chile","qty":"1","section":"produce","note":"optional"},{"key":"ground-cumin","name":"ground cumin","qty":"1 teaspoon","section":"pantry","note":null},{"key":"ground-coriander","name":"ground coriander","qty":"1 teaspoon","section":"pantry","note":null},{"key":"cumin-seed","name":"cumin seeds","qty":"1/2 teaspoon","section":"pantry","note":null},{"key":"turmeric","name":"ground turmeric","qty":"1/2 teaspoon","section":"pantry","note":null},{"key":"cayenne","name":"cayenne pepper","qty":"1/4 teaspoon","section":"pantry","note":null},{"key":"tomato-sauce","name":"canned tomato sauce","qty":"1 8-oz (227 g) can (1 cup)","section":"pantry","note":null},{"key":"canned-kidney-bean","name":"canned red kidney beans (15-oz cans)","qty":"2 15-oz (425 g) cans","section":"pantry","note":"or 3 cups cooked"},{"key":"cilantro","name":"fresh cilantro","qty":"1/2 cup, chopped","section":"produce","note":"or flat-leaf parsley"}],"https://smittenkitchen.com/2018/01/split-pea-soup/":[{"key":"olive-oil","name":"olive oil","qty":"2 tablespoons","section":"pantry","note":"or 1 tbsp olive oil + 1 tbsp butter"},{"key":"leek","name":"leeks","qty":"3, halved and sliced","section":"produce","note":null},{"key":"carrot","name":"carrot","qty":"1, chopped small","section":"produce","note":null},{"key":"celery","name":"celery","qty":"1 large rib, chopped","section":"produce","note":null},{"key":"garlic","name":"garlic","qty":"4 cloves, sliced thin","section":"produce","note":null},{"key":"green-split-pea","name":"dried green split peas","qty":"1 lb / 454 g","section":"pantry","note":null},{"key":"vegetable-broth","name":"vegetable stock or broth","qty":"2 quarts (8 cups)","section":"pantry","note":null},{"key":"fresh-thyme","name":"fresh thyme","qty":"2 to 3 sprigs","section":"produce","note":"optional"},{"key":"bay-leaf","name":"bay leaf","qty":"1","section":"pantry","note":null},{"key":"garlic","name":"garlic","qty":"1 large or 2 small cloves","section":"produce","note":"for optional herb sauce"},{"key":"flat-leaf-parsley","name":"fresh flat-leaf parsley","qty":"a couple handfuls of leaves","section":"produce","note":"for optional herb sauce; mint or cilantro also work"},{"key":"lemon","name":"lemon","qty":"1/2 (zest only)","section":"produce","note":"for optional herb sauce"},{"key":"red-pepper-flakes","name":"red pepper flakes","qty":"pinch","section":"pantry","note":"for optional herb sauce"},{"key":"olive-oil","name":"olive oil","qty":"a few tablespoons (drizzled in)","section":"pantry","note":"for optional herb sauce"},{"key":"sour-cream","name":"sour cream","qty":"dollop per bowl","section":"dairy","note":"optional, to finish"}],"https://smittenkitchen.com/2014/04/three-bean-chili/":[{"key":"olive-oil","name":"olive oil","qty":"1 tablespoon","section":"pantry","note":null},{"key":"yellow-onion","name":"yellow onion","qty":"1 medium","section":"produce","note":null},{"key":"fresh-pepper","name":"fresh peppers, your choice (bell, poblano, or jalapeño)","qty":"1 to 2, finely chopped","section":"produce","note":null},{"key":"garlic","name":"garlic","qty":"3 cloves","section":"produce","note":null},{"key":"chili-powder","name":"chili powder","qty":"2 tablespoons","section":"pantry","note":null},{"key":"ground-cumin","name":"ground cumin","qty":"2 teaspoons","section":"pantry","note":null},{"key":"dried-oregano","name":"dried oregano","qty":"1 teaspoon","section":"pantry","note":null},{"key":"beer","name":"beer (12-oz bottle)","qty":"1 bottle","section":"pantry","note":"optional; or use broth/water"},{"key":"canned-tomato","name":"canned crushed tomatoes (28-oz can)","qty":"1 28-oz (794 g) can","section":"pantry","note":"fire-roasted if available"},{"key":"mixed-dried-bean","name":"mixed dried beans","qty":"1 1/2 cups","section":"pantry","note":"a mix, e.g. kidney, black, pinto (see recipe note)"}],"https://smittenkitchen.com/2010/01/black-bean-soup-toasted-cumin-seed-crema/":[{"key":"olive-oil","name":"olive oil","qty":"1 tablespoon","section":"pantry","note":null},{"key":"red-onion","name":"red onion","qty":"2 medium","section":"produce","note":null},{"key":"red-bell-pepper","name":"red bell pepper","qty":"1 medium","section":"produce","note":null},{"key":"green-bell-pepper","name":"green bell pepper","qty":"1 medium","section":"produce","note":null},{"key":"garlic","name":"garlic","qty":"4 cloves","section":"produce","note":null},{"key":"ground-cumin","name":"ground cumin","qty":"4 teaspoons","section":"pantry","note":null},{"key":"dried-black-bean","name":"dried black beans","qty":"1 16-oz (1 lb / 454 g) package","section":"pantry","note":null},{"key":"chipotle-in-adobo","name":"canned chipotle chiles in adobo","qty":"1 tablespoon, chopped","section":"pantry","note":null},{"key":"lime","name":"lime","qty":"2 tablespoons juice (about 1 lime)","section":"produce","note":null},{"key":"cumin-seed","name":"whole cumin seeds","qty":"1 tablespoon","section":"pantry","note":"for the crema"},{"key":"sour-cream","name":"Mexican crema, crème fraîche, or sour cream","qty":"1 cup","section":"dairy","note":"for the crema; yogurt also works"}],"https://smittenkitchen.com/2011/01/chard-and-white-bean-stew/":[{"key":"swiss-chard","name":"Swiss chard","qty":"1 lb / 454 g","section":"produce","note":"or kale or spinach"},{"key":"olive-oil","name":"olive oil","qty":"3 tablespoons","section":"pantry","note":null},{"key":"carrot","name":"carrots","qty":"1 cup chopped (5 1/4 oz / 150 g)","section":"produce","note":null},{"key":"celery","name":"celery","qty":"1 cup chopped (5 oz / 140 g)","section":"produce","note":null},{"key":"shallot","name":"shallots","qty":"about 4 medium (1 cup chopped, 4 1/4 oz / 120 g)","section":"produce","note":null},{"key":"garlic","name":"garlic","qty":"2 cloves","section":"produce","note":null},{"key":"dry-white-wine","name":"dry white wine","qty":"1 cup","section":"pantry","note":null},{"key":"canned-white-bean","name":"canned white beans (15-oz cans)","qty":"2 15-oz (425 g) cans","section":"pantry","note":"or about 3 3/4 cups cooked"},{"key":"vegetable-broth","name":"vegetable broth","qty":"2 cups, or more to taste","section":"pantry","note":null},{"key":"canned-tomato","name":"pureed tomatoes (canned)","qty":"1 cup","section":"pantry","note":null},{"key":"fresh-thyme","name":"fresh thyme","qty":"3 sprigs","section":"produce","note":null},{"key":"bay-leaf","name":"bay leaf","qty":"1","section":"pantry","note":null},{"key":"sherry-vinegar","name":"sherry vinegar","qty":"1 tablespoon","section":"pantry","note":null},{"key":"egg","name":"eggs","qty":"1 per serving, poached","section":"dairy","note":"optional, for serving on top"}],"https://smittenkitchen.com/2020/09/tangy-braised-chickpeas/":[{"key":"olive-oil","name":"olive oil","qty":"4 tablespoons","section":"pantry","note":null},{"key":"yellow-onion","name":"yellow onion","qty":"1 medium, thinly sliced","section":"produce","note":null},{"key":"garlic","name":"garlic","qty":"4 cloves, very thinly sliced","section":"produce","note":null},{"key":"carrot","name":"carrots","qty":"2 large thick (12 oz / 340 g)","section":"produce","note":null},{"key":"red-pepper-flakes","name":"red pepper flakes","qty":"1/4 teaspoon","section":"pantry","note":null},{"key":"portobello-mushroom","name":"portobello mushrooms","qty":"2 large (6 oz / 170 g)","section":"produce","note":null},{"key":"tomato-paste","name":"tomato paste","qty":"4 tablespoons","section":"pantry","note":null},{"key":"vegetable-broth","name":"mushroom or vegetable stock","qty":"3 to 4 cups","section":"pantry","note":null},{"key":"red-wine-vinegar","name":"red wine or sherry vinegar","qty":"1/3 cup","section":"pantry","note":null},{"key":"soy-sauce","name":"soy sauce","qty":"2 teaspoons","section":"pantry","note":"swapped from Worcestershire"},{"key":"canned-chickpea","name":"canned chickpeas (15-oz cans)","qty":"2 15-oz (425 g) cans","section":"pantry","note":null},{"key":"bay-leaf","name":"bay leaf","qty":"1","section":"pantry","note":null}],"https://smittenkitchen.com/2010/03/spinach-and-chickpeas/":[{"key":"canned-chickpea","name":"canned chickpeas (15-oz cans)","qty":"2 15-oz (425 g) cans","section":"pantry","note":"or 1/2 lb / 230 g dried, cooked until tender"},{"key":"olive-oil","name":"olive oil","qty":"6 tablespoons","section":"pantry","note":null},{"key":"spinach","name":"spinach","qty":"1 lb / 450 g","section":"produce","note":null},{"key":"country-bread","name":"country loaf or sandwich bread","qty":"1 hefty 1-inch slice (2.5 oz / 75 g), crusts removed","section":"nuts-seeds-bread","note":"goes into the sauce (serving toasts excluded)"},{"key":"tomato-sauce","name":"canned tomato sauce","qty":"1/2 cup (4 oz / 113 g)","section":"pantry","note":null},{"key":"garlic","name":"garlic","qty":"3 cloves, thinly sliced","section":"produce","note":null},{"key":"ground-cumin","name":"ground cumin","qty":"1/2 teaspoon","section":"pantry","note":null},{"key":"red-pepper-flakes","name":"red pepper flakes","qty":"pinch","section":"pantry","note":null},{"key":"red-wine-vinegar","name":"red wine vinegar","qty":"1 1/2 tablespoons","section":"pantry","note":null},{"key":"smoked-paprika","name":"smoked paprika","qty":"1/2 teaspoon","section":"pantry","note":null},{"key":"lemon","name":"lemon","qty":"juice, to taste","section":"produce","note":null}],"https://smittenkitchen.com/2008/03/fast-white-bean-stew/":[{"key":"garlic","name":"garlic","qty":"2 large cloves, chopped","section":"produce","note":null},{"key":"olive-oil","name":"extra-virgin olive oil","qty":"1/4 cup plus 1/2 tablespoon","section":"pantry","note":null},{"key":"canned-tomato","name":"canned stewed tomatoes (14- to 15-oz can)","qty":"1 14-15 oz (about 411 g) can","section":"pantry","note":null},{"key":"vegetable-broth","name":"vegetable broth","qty":"1 3/4 cups","section":"pantry","note":"swapped from chicken broth"},{"key":"canned-white-bean","name":"canned cannellini beans (19-oz cans)","qty":"2 19-oz (540 g) cans (3 cups)","section":"pantry","note":null},{"key":"baby-greens","name":"baby romaine or baby arugula (5-oz bag)","qty":"1 5-oz (140 g) bag (10 cups loosely packed)","section":"produce","note":null}],"https://smittenkitchen.com/2010/04/shakshuka/":[{"key":"olive-oil","name":"olive oil","qty":"1/4 cup","section":"pantry","note":null},{"key":"anaheim-chile","name":"Anaheim chiles (or jalapeños)","qty":"5 Anaheim or 3 jalapeños","section":"produce","note":null},{"key":"yellow-onion","name":"yellow onion","qty":"1 small","section":"produce","note":null},{"key":"garlic","name":"garlic","qty":"5 cloves","section":"produce","note":null},{"key":"ground-cumin","name":"ground cumin","qty":"1 tsp","section":"pantry","note":null},{"key":"sweet-paprika","name":"paprika","qty":"1 tbsp","section":"pantry","note":null},{"key":"canned-tomato","name":"canned whole peeled tomatoes","qty":"1 (28-oz / 794-g) can","section":"pantry","note":null},{"key":"egg","name":"large eggs","qty":"6","section":"dairy","note":null},{"key":"feta","name":"feta cheese","qty":"1/2 cup crumbled","section":"dairy","note":null},{"key":"flat-leaf-parsley","name":"flat-leaf parsley","qty":"1 tbsp chopped","section":"produce","note":null}],"https://smittenkitchen.com/2019/10/chickpea-and-kale-shakshuka/":[{"key":"olive-oil","name":"olive oil","qty":"1 to 2 tbsp (a glug)","section":"pantry","note":null},{"key":"yellow-onion","name":"yellow onion","qty":"1 medium","section":"produce","note":null},{"key":"garlic","name":"garlic","qty":"2 cloves","section":"produce","note":null},{"key":"ground-cumin","name":"ground cumin","qty":"1 tsp","section":"pantry","note":null},{"key":"ground-coriander","name":"ground coriander","qty":"1 tsp","section":"pantry","note":null},{"key":"jalapeno","name":"jalapeño pepper","qty":"1/2","section":"produce","note":null},{"key":"canned-chickpea","name":"canned chickpeas","qty":"2 (15-oz / 425-g) cans","section":"pantry","note":null},{"key":"canned-tomato","name":"canned crushed tomatoes","qty":"1 (15-oz / 425-g) can","section":"pantry","note":null},{"key":"vegetable-broth","name":"vegetable broth","qty":"1/2 cup (125 ml)","section":"pantry","note":null},{"key":"kale","name":"kale","qty":"4 oz / 113 g, stems removed","section":"produce","note":null},{"key":"feta","name":"feta cheese","qty":"1 cup crumbled (150 g / 5.3 oz)","section":"dairy","note":null},{"key":"egg","name":"large eggs","qty":"4 to 6","section":"dairy","note":null},{"key":"zaatar","name":"za'atar","qty":"1 tbsp","section":"pantry","note":null},{"key":"mint","name":"fresh mint leaves","qty":"handful, chopped","section":"produce","note":null},{"key":"greek-yogurt","name":"plain Greek yogurt","qty":"a few dollops","section":"dairy","note":"optional, for serving"}],"https://smittenkitchen.com/2009/12/spinach-and-cheese-strata/":[{"key":"frozen-spinach","name":"frozen spinach","qty":"1 (10-oz / 283-g) package","section":"frozen","note":null},{"key":"yellow-onion","name":"yellow onion","qty":"1 large (1 1/2 cups chopped)","section":"produce","note":null},{"key":"butter","name":"unsalted butter","qty":"3 tbsp","section":"dairy","note":null},{"key":"nutmeg","name":"nutmeg","qty":"1/4 tsp freshly grated","section":"pantry","note":null},{"key":"bread","name":"French or Italian bread","qty":"8 cups 1-inch cubes (1/2 lb / 227 g)","section":"nuts-seeds-bread","note":"core to the dish"},{"key":"gruyere","name":"Gruyère cheese","qty":"6 oz / 170 g (2 cups grated)","section":"dairy","note":null},{"key":"parmesan","name":"Parmesan cheese","qty":"2 oz / 57 g (1 cup grated)","section":"dairy","note":null},{"key":"milk","name":"milk","qty":"2 3/4 cups","section":"dairy","note":null},{"key":"egg","name":"large eggs","qty":"9","section":"dairy","note":null},{"key":"dijon-mustard","name":"Dijon mustard","qty":"2 tbsp","section":"pantry","note":null}],"https://smittenkitchen.com/2014/09/corn-cheddar-and-scallion-strata/":[{"key":"butter","name":"unsalted butter","qty":"1 tbsp","section":"dairy","note":null},{"key":"corn","name":"fresh corn","qty":"3 cups kernels (from 3 small-to-average cobs)","section":"produce","note":null},{"key":"scallion","name":"scallions","qty":"1 1/2 cups thinly sliced (one 4-oz / 113-g bundle)","section":"produce","note":null},{"key":"bread","name":"whole wheat, country, or French bread","qty":"8 cups 1-inch cubes (10–14 oz / 283–397 g)","section":"nuts-seeds-bread","note":"core to the dish"},{"key":"cheddar","name":"sharp cheddar cheese","qty":"2 cups grated (6 oz / 170 g)","section":"dairy","note":null},{"key":"parmesan","name":"Parmesan cheese","qty":"1 cup grated (2 oz / 57 g)","section":"dairy","note":null},{"key":"egg","name":"large eggs","qty":"9","section":"dairy","note":null},{"key":"mayonnaise","name":"mayonnaise","qty":"2 tbsp","section":"pantry","note":"optional; choose an olive- or avocado-oil mayo (no seed oils)"},{"key":"milk","name":"milk","qty":"2 3/4 cups","section":"dairy","note":"some commenters prefer only 2 cups"}],"https://smittenkitchen.com/2016/11/spinach-sheet-pan-quiche/":[{"key":"all-purpose-flour","name":"all-purpose flour","qty":"1 2/3 cups (215 g / 7.6 oz)","section":"pantry","note":"crust"},{"key":"butter","name":"unsalted butter","qty":"12 tbsp (170 g / 6 oz), plus more for greasing pan","section":"dairy","note":"pan-greasing butter swapped from nonstick spray"},{"key":"cream-cheese","name":"cream cheese","qty":"3/4 cup (6 oz / 170 g)","section":"dairy","note":null},{"key":"half-and-half","name":"half-and-half","qty":"2/3 cup (155 ml)","section":"dairy","note":"or 1/3 cup each whole milk and heavy cream"},{"key":"egg","name":"large eggs","qty":"6","section":"dairy","note":null},{"key":"frozen-spinach","name":"frozen chopped spinach","qty":"2 (10-oz / 283-g) packages","section":"frozen","note":null},{"key":"cheddar","name":"cheddar or Gruyère cheese","qty":"1 cup grated (4 oz / 115 g)","section":"dairy","note":null},{"key":"parmesan","name":"Parmesan cheese","qty":"1/2 cup finely grated (50 g / 1.8 oz)","section":"dairy","note":null},{"key":"scallion","name":"green onions (scallions)","qty":"1 small bundle (about 8 thin; 2–3 oz / 57–85 g)","section":"produce","note":null}],"https://smittenkitchen.com/2012/04/over-the-top-mushroom-quiche/":[{"key":"all-purpose-flour","name":"all-purpose flour","qty":"2 cups (250 g / 8.8 oz), plus more for dusting","section":"pantry","note":"crust"},{"key":"butter","name":"unsalted butter","qty":"1 cup / 2 sticks (225 g / 8 oz), plus 1 tbsp for filling","section":"dairy","note":null},{"key":"olive-oil","name":"olive oil","qty":"1 tbsp (15 ml), plus more for brushing springform","section":"pantry","note":"swapped from neutral/vegetable oil"},{"key":"mushroom","name":"mushrooms","qty":"2 lb / 905 g","section":"produce","note":null},{"key":"shallot","name":"shallots","qty":"2","section":"produce","note":null},{"key":"fresh-thyme","name":"fresh thyme","qty":"1 tbsp minced","section":"produce","note":"use only 1 tsp if dried"},{"key":"gruyere","name":"Gruyère (or Comté or Emmental) cheese","qty":"3/4 cup grated (70 g / 2.5 oz)","section":"dairy","note":null},{"key":"milk","name":"milk","qty":"2 cups (475 ml)","section":"dairy","note":null},{"key":"heavy-cream","name":"heavy cream","qty":"2 cups (475 ml)","section":"dairy","note":null},{"key":"egg","name":"large eggs","qty":"6","section":"dairy","note":null},{"key":"nutmeg","name":"nutmeg","qty":"freshly grated, to taste","section":"pantry","note":"optional"}],"https://smittenkitchen.com/2010/06/zucchini-and-ricotta-galette/":[{"key":"all-purpose-flour","name":"all-purpose flour","qty":"1 1/4 cups (165 g / 5.8 oz)","section":"pantry","note":"crust"},{"key":"butter","name":"unsalted butter","qty":"1/2 cup / 8 tbsp (113 g / 4 oz)","section":"dairy","note":null},{"key":"sour-cream","name":"sour cream","qty":"1/4 cup (60 g)","section":"dairy","note":"or plain yogurt or ricotta"},{"key":"lemon","name":"lemon (for juice)","qty":"2 tsp fresh juice (10 ml)","section":"produce","note":null},{"key":"zucchini","name":"zucchini","qty":"1 large or 2 small (1 lb / 455 g)","section":"produce","note":null},{"key":"olive-oil","name":"olive oil","qty":"1 tbsp plus 1 tsp","section":"pantry","note":null},{"key":"garlic","name":"garlic","qty":"1 medium clove","section":"produce","note":null},{"key":"ricotta","name":"ricotta cheese","qty":"1/2 cup (120 g / 4.2 oz)","section":"dairy","note":null},{"key":"parmesan","name":"Parmesan cheese","qty":"1/2 cup grated (50 g / 1.8 oz)","section":"dairy","note":null},{"key":"mozzarella","name":"mozzarella cheese","qty":"1/2 cup shredded (50 g / 1.8 oz)","section":"dairy","note":null},{"key":"egg","name":"egg (yolk, for glaze)","qty":"1 yolk","section":"dairy","note":null},{"key":"basil","name":"fresh basil leaves","qty":"1 tbsp thinly sliced","section":"produce","note":"to finish"}],"https://smittenkitchen.com/2024/11/halloumi-and-fall-vegetable-roast/":[{"key":"olive-oil","name":"olive oil","qty":"4 tbsp, plus more for pans","section":"pantry","note":null},{"key":"garlic","name":"garlic","qty":"2 cloves","section":"produce","note":null},{"key":"fresh-thyme","name":"fresh thyme leaves","qty":"2 tsp chopped","section":"produce","note":null},{"key":"red-pepper-flakes","name":"red pepper flakes","qty":"1/2 tsp, or to taste","section":"pantry","note":null},{"key":"cauliflower","name":"cauliflower","qty":"1 lb / 454 g","section":"produce","note":null},{"key":"sweet-potato","name":"sweet potatoes","qty":"1 lb / 454 g","section":"produce","note":null},{"key":"brussels-sprouts","name":"Brussels sprouts","qty":"1 lb / 454 g","section":"produce","note":null},{"key":"balsamic-vinegar","name":"balsamic vinegar","qty":"3 tbsp","section":"pantry","note":"honey/maple in glaze omitted (diabetic)"},{"key":"halloumi","name":"halloumi cheese","qty":"1 (8-oz / 225-g) block","section":"dairy","note":null}],"https://smittenkitchen.com/2016/04/shaved-asparagus-frittata/":[{"key":"asparagus","name":"asparagus","qty":"1/2 lb / 227 g","section":"produce","note":null},{"key":"egg","name":"large eggs","qty":"8","section":"dairy","note":null},{"key":"milk","name":"milk","qty":"2 tbsp","section":"dairy","note":"or cream"},{"key":"scallion","name":"scallions","qty":"2, thinly sliced","section":"produce","note":null},{"key":"olive-oil","name":"olive oil","qty":"2 tbsp","section":"pantry","note":null},{"key":"goat-cheese","name":"soft goat cheese","qty":"2–4 oz / 57–113 g, to taste","section":"dairy","note":null}],"https://smittenkitchen.com/2013/10/potato-and-broccolini-frittata/":[{"key":"potato","name":"small waxy potatoes","qty":"8 to 10 (about 1 oz / 28 g each)","section":"produce","note":null},{"key":"vegetable-broth","name":"vegetable broth","qty":"1 cup","section":"pantry","note":"or salted water"},{"key":"olive-oil","name":"olive oil","qty":"1/4 cup","section":"pantry","note":null},{"key":"broccolini","name":"broccolini","qty":"8 oz / 227 g (about 1 bundle)","section":"produce","note":null},{"key":"red-onion","name":"red or white onion","qty":"1 small, thinly sliced","section":"produce","note":null},{"key":"egg","name":"large eggs","qty":"8","section":"dairy","note":null},{"key":"parmesan","name":"Parmesan cheese","qty":"1 cup grated (3–3 1/2 oz / 85–100 g)","section":"dairy","note":null}],"https://smittenkitchen.com/2014/04/baked-eggs-with-spinach-and-mushrooms/":[{"key":"spinach","name":"fresh baby spinach","qty":"2 lb / 907 g","section":"produce","note":"or regular spinach leaves"},{"key":"yellow-onion","name":"yellow onion","qty":"1 small","section":"produce","note":null},{"key":"garlic","name":"garlic","qty":"3 small cloves","section":"produce","note":null},{"key":"butter","name":"unsalted butter","qty":"4 tbsp","section":"dairy","note":null},{"key":"mushroom","name":"mushrooms","qty":"1 lb / 454 g, thinly sliced","section":"produce","note":"cremini suggested"},{"key":"heavy-cream","name":"heavy cream","qty":"1 cup","section":"dairy","note":null},{"key":"nutmeg","name":"nutmeg","qty":"1/4 tsp freshly grated","section":"pantry","note":"optional"},{"key":"egg","name":"large eggs","qty":"12","section":"dairy","note":null},{"key":"parmesan","name":"Parmesan cheese","qty":"6 tbsp finely grated","section":"dairy","note":null}],"https://smittenkitchen.com/2021/02/baked-feta-with-tomatoes-and-chickpeas/":[{"key":"feta","name":"feta cheese","qty":"1 (8-oz / 225-g) block","section":"dairy","note":null},{"key":"olive-oil","name":"olive oil","qty":"1/2 cup (120 ml)","section":"pantry","note":null},{"key":"cherry-tomato","name":"cherry or grape tomatoes","qty":"1 1/2 to 2 pints (3–4 cups)","section":"produce","note":null},{"key":"garlic","name":"garlic","qty":"4 cloves, thinly sliced","section":"produce","note":null},{"key":"red-chili","name":"fresh red chili pepper","qty":"1/2, thinly sliced","section":"produce","note":null},{"key":"canned-chickpea","name":"canned chickpeas","qty":"2 (15-oz / 425-g) cans","section":"pantry","note":null},{"key":"mixed-fresh-herbs","name":"fresh herbs (parsley, cilantro, mint, dill, basil, or a mix)","qty":"2 to 3 tbsp chopped","section":"produce","note":null}],"https://smittenkitchen.com/2022/01/my-favorite-lentil-salad/":[{"key":"brown-lentil","name":"small green, brown, or black lentils","qty":"2 1/2 cups cooked (from about 1 cup dried)","section":"pantry","note":null},{"key":"canned-whole-tomatoes","name":"canned whole tomatoes","qty":"one 28-oz / 794 g can","section":"pantry","note":null},{"key":"white-onion","name":"white onion","qty":"1/2 large or 1 small","section":"produce","note":null},{"key":"jalapeno","name":"fresh jalapeños","qty":"1 to 2, to taste","section":"produce","note":null},{"key":"garlic","name":"garlic","qty":"2 cloves","section":"produce","note":null},{"key":"cilantro","name":"fresh cilantro","qty":"1 cup chopped leaves, divided","section":"produce","note":null},{"key":"lime","name":"limes","qty":"1, juiced, plus more to taste","section":"produce","note":null},{"key":"avocado","name":"large firm-ripe avocado","qty":"1, diced","section":"produce","note":null},{"key":"cherry-tomato","name":"cherry tomatoes","qty":"2 cups (about a 12-oz / 340 g package)","section":"produce","note":null},{"key":"hot-sauce","name":"hot sauce","qty":"to taste","section":"pantry","note":null}],"https://smittenkitchen.com/2013/04/lentil-and-chickpea-salad-with-feta-and-tahini/":[{"key":"green-lentil","name":"dried green lentils (Puy or Castelluccio if available)","qty":"scant 1 cup","section":"pantry","note":null},{"key":"garlic","name":"garlic","qty":"2 1/2 large cloves, divided","section":"produce","note":null},{"key":"sage","name":"fresh sage sprigs","qty":"2","section":"produce","note":null},{"key":"olive-oil","name":"olive oil","qty":"4 tablespoons plus 2 teaspoons, divided","section":"pantry","note":null},{"key":"coriander-seed","name":"coriander seeds (to toast and grind)","qty":"2 teaspoons","section":"pantry","note":null},{"key":"cumin-seed","name":"cumin seeds (to toast and grind)","qty":"1 teaspoon","section":"pantry","note":null},{"key":"tahini","name":"tahini paste","qty":"2 tablespoons","section":"pantry","note":null},{"key":"lemon","name":"lemons (for 1/4 cup fresh juice)","qty":"1/4 cup juice, plus more to taste (about 2 lemons)","section":"produce","note":null},{"key":"canned-chickpea","name":"canned chickpeas","qty":"1 3/4 cups drained (one 15-oz / 425 g can)","section":"pantry","note":null},{"key":"preserved-lemon","name":"preserved lemon","qty":"1/2 small (rind only, finely diced)","section":"pantry","note":"optional"},{"key":"red-onion","name":"red onion","qty":"1 very small, thinly sliced","section":"produce","note":null},{"key":"cilantro","name":"cilantro or flat-leaf parsley sprigs","qty":"a handful","section":"produce","note":null},{"key":"feta","name":"feta (goat's milk if available)","qty":"scant 1/4 cup","section":"dairy","note":null},{"key":"sesame-seed","name":"raw sesame seeds (to toast)","qty":"1 1/2 tablespoons","section":"nuts-seeds-bread","note":null}],"https://smittenkitchen.com/2020/03/carrot-and-white-bean-burgers/":[{"key":"olive-oil","name":"olive oil","qty":"for cooking","section":"pantry","note":null},{"key":"panko","name":"panko-style breadcrumbs","qty":"1/2 cup","section":"pantry","note":null},{"key":"shallot","name":"shallots (or 1 small onion)","qty":"3, diced","section":"produce","note":null},{"key":"tomato-paste","name":"tomato paste","qty":"1 tablespoon","section":"pantry","note":null},{"key":"carrot","name":"carrots","qty":"1 cup packed grated (from 2 medium)","section":"produce","note":null},{"key":"apple-cider-vinegar","name":"apple cider vinegar","qty":"1 1/2 tablespoons","section":"pantry","note":null},{"key":"canned-white-bean","name":"canned cannellini or other white beans","qty":"two 15-oz / 425 g cans, drained and rinsed","section":"pantry","note":null},{"key":"egg","name":"eggs","qty":"1 large","section":"dairy","note":null},{"key":"whole-grain-bun","name":"whole-grain buns or lettuce wraps","qty":"as needed for serving","section":"nuts-seeds-bread","note":"optional"}],"https://smittenkitchen.com/2018/12/falafel/":[{"key":"dried-chickpea","name":"dried chickpeas","qty":"1/2 lb / 225 g (1 1/4 cups)","section":"pantry","note":null},{"key":"yellow-onion","name":"onion (or 1 cup chopped scallions)","qty":"1/2 large","section":"produce","note":null},{"key":"garlic","name":"garlic","qty":"2 to 4 cloves","section":"produce","note":null},{"key":"flat-leaf-parsley","name":"fresh parsley","qty":"1/4 cup finely chopped","section":"produce","note":null},{"key":"cilantro","name":"fresh cilantro","qty":"1/4 cup finely chopped","section":"produce","note":null},{"key":"red-pepper-flakes","name":"hot red pepper flakes (or mild, such as Urfa or Aleppo)","qty":"1/2 to 1 teaspoon","section":"pantry","note":null},{"key":"ground-cumin","name":"ground cumin","qty":"1 teaspoon","section":"pantry","note":null},{"key":"olive-oil","name":"olive oil","qty":"for frying","section":"pantry","note":"swapped from peanut/vegetable oil"},{"key":"whole-grain-pita","name":"whole-grain pita","qty":"for serving","section":"nuts-seeds-bread","note":"optional"}],"https://smittenkitchen.com/2009/01/smashed-chickpea-salad/":[{"key":"canned-chickpea","name":"canned chickpeas","qty":"one 15-oz / 425 g can, drained and rinsed","section":"pantry","note":null},{"key":"olives","name":"pitted black olives","qty":"2 tablespoons, halved and thinly sliced","section":"pantry","note":null},{"key":"red-onion","name":"red onion","qty":"1 tablespoon finely chopped","section":"produce","note":null},{"key":"flat-leaf-parsley","name":"fresh parsley","qty":"1 tablespoon chopped","section":"produce","note":null},{"key":"lemon","name":"lemon","qty":"zest and juice of 1/2","section":"produce","note":null},{"key":"red-pepper-flakes","name":"red pepper flakes","qty":"a few pinches","section":"pantry","note":"optional"},{"key":"olive-oil","name":"olive oil","qty":"a few glugs","section":"pantry","note":null}],"https://smittenkitchen.com/2013/02/egg-salad-with-pickled-celery-and-coarse-dijon/":[{"key":"white-wine-vinegar","name":"white wine vinegar","qty":"1/4 cup","section":"pantry","note":null},{"key":"celery","name":"celery","qty":"2 stalks, diced tiny","section":"produce","note":null},{"key":"egg","name":"eggs","qty":"4 large","section":"dairy","note":null},{"key":"dijon-mustard","name":"whole-grain Dijon mustard","qty":"1 heaped teaspoon","section":"pantry","note":null},{"key":"shallot","name":"shallot or red onion","qty":"2 teaspoons minced, or more to taste","section":"produce","note":null},{"key":"olive-oil-mayonnaise","name":"olive-oil mayonnaise or plain full-fat yogurt","qty":"2 tablespoons","section":"dairy","note":"swapped from regular mayonnaise"},{"key":"dill","name":"fresh dill or flat-leaf parsley","qty":"for garnish","section":"produce","note":"optional garnish"}],"https://smittenkitchen.com/2013/01/ethereally-smooth-hummus/":[{"key":"canned-chickpea","name":"canned chickpeas (or a little shy of 2/3 cup dried)","qty":"1 3/4 cups cooked, drained (one 15-oz / 425 g can)","section":"pantry","note":null},{"key":"baking-soda","name":"baking soda","qty":"1/2 teaspoon","section":"pantry","note":"only if cooking dried chickpeas"},{"key":"tahini","name":"tahini paste","qty":"1/2 cup","section":"pantry","note":null},{"key":"lemon","name":"lemon (for fresh juice)","qty":"2 tablespoons juice, or more to taste (about 1 lemon)","section":"produce","note":null},{"key":"garlic","name":"garlic","qty":"2 small cloves","section":"produce","note":null}],"https://smittenkitchen.com/2023/03/bean-and-vegetable-burritos/":[{"key":"olive-oil","name":"olive oil","qty":"2 tablespoons","section":"pantry","note":"use olive oil option, not vegetable oil"},{"key":"yellow-onion","name":"onion","qty":"1 medium, diced small","section":"produce","note":null},{"key":"garlic","name":"garlic","qty":"2 large cloves, minced","section":"produce","note":null},{"key":"jalapeno","name":"fresh jalapeño or habanero pepper","qty":"1, minced","section":"produce","note":null},{"key":"bell-pepper","name":"bell pepper","qty":"1, diced","section":"produce","note":null},{"key":"ground-cumin","name":"ground cumin","qty":"1 teaspoon","section":"pantry","note":null},{"key":"chili-powder","name":"ground chili powder","qty":"2 to 3 teaspoons, to taste","section":"pantry","note":null},{"key":"tomato-paste","name":"tomato paste","qty":"2 tablespoons","section":"pantry","note":null},{"key":"canned-diced-tomatoes","name":"canned diced tomatoes","qty":"one 14-oz / 397 g can","section":"pantry","note":null},{"key":"canned-black-bean","name":"canned black, red, or pinto beans","qty":"two 15.5-oz / 439 g cans, drained and rinsed","section":"pantry","note":null},{"key":"corn","name":"corn kernels (fresh, canned, or frozen)","qty":"1 1/2 cups","section":"frozen","note":null},{"key":"baby-spinach","name":"baby spinach","qty":"5 oz / 142 g, roughly chopped","section":"produce","note":null},{"key":"lime","name":"lime","qty":"1, halved","section":"produce","note":null},{"key":"cotija","name":"cotija cheese","qty":"1 cup crumbled","section":"dairy","note":null},{"key":"monterey-jack","name":"monterey jack or pepper jack cheese","qty":"8 oz / 227 g (about 2 cups grated)","section":"dairy","note":null},{"key":"whole-grain-tortilla","name":"whole-grain or low-carb large tortillas","qty":"8 burrito-sized","section":"nuts-seeds-bread","note":"swapped from flour tortillas"},{"key":"hot-sauce","name":"hot sauce","qty":"to taste","section":"pantry","note":null}],"https://smittenkitchen.com/2014/03/kale-and-quinoa-salad-with-ricotta-salata/":[{"key":"quinoa","name":"quinoa","qty":"1/2 cup uncooked (or 1 1/2 cups cooked)","section":"pantry","note":null},{"key":"kale","name":"black (lacinato/Tuscan) kale","qty":"8 oz / 225 g","section":"produce","note":null},{"key":"almond","name":"slivered almonds (to toast)","qty":"1/2 cup","section":"nuts-seeds-bread","note":null},{"key":"scallion","name":"scallions","qty":"2 to 3, thinly sliced","section":"produce","note":null},{"key":"dill","name":"fresh dill","qty":"2 teaspoons chopped","section":"produce","note":null},{"key":"ricotta-salata","name":"ricotta salata","qty":"2 oz / 57 g, crumbled or grated","section":"dairy","note":null},{"key":"lemon","name":"lemon (for fresh zest)","qty":"a few gratings of zest","section":"produce","note":null},{"key":"olive-oil","name":"olive oil","qty":"3 tablespoons","section":"pantry","note":null},{"key":"white-wine-vinegar","name":"white wine vinegar","qty":"1 1/2 tablespoons","section":"pantry","note":null},{"key":"dijon-mustard","name":"Dijon mustard (smooth and coarse)","qty":"2 teaspoons smooth plus 1 teaspoon coarse","section":"pantry","note":null}],"https://smittenkitchen.com/2012/06/broccoli-parmesan-fritters/":[{"key":"broccoli","name":"fresh broccoli","qty":"8 oz / 225 g (about 3 cups chopped)","section":"produce","note":null},{"key":"egg","name":"eggs","qty":"1 large","section":"dairy","note":null},{"key":"all-purpose-flour","name":"all-purpose flour","qty":"1/2 cup / 65 g","section":"pantry","note":null},{"key":"parmesan","name":"parmesan cheese","qty":"1/3 cup / 30 g finely grated","section":"dairy","note":null},{"key":"garlic","name":"garlic","qty":"1 small clove, minced","section":"produce","note":null},{"key":"red-pepper-flakes","name":"red pepper flakes","qty":"a pinch","section":"pantry","note":null},{"key":"olive-oil","name":"olive oil","qty":"for frying","section":"pantry","note":"use olive oil option, not vegetable oil"},{"key":"greek-yogurt","name":"plain Greek yogurt (for the garlicky lemon dip)","qty":"1 cup","section":"dairy","note":"for serving, boosts protein"}],"https://smittenkitchen.com/2012/12/cauliflower-feta-fritters-with-pomegranate/":[{"key":"cauliflower","name":"cauliflower","qty":"1 small head (1 lb / 454 g florets)","section":"produce","note":null},{"key":"egg","name":"eggs","qty":"1 large","section":"dairy","note":null},{"key":"garlic","name":"garlic","qty":"1 clove, minced","section":"produce","note":null},{"key":"lemon","name":"lemon (for fresh zest)","qty":"a few gratings of zest","section":"produce","note":null},{"key":"feta","name":"feta","qty":"3 oz / 85 g crumbled (about 1/2 cup)","section":"dairy","note":null},{"key":"all-purpose-flour","name":"all-purpose flour","qty":"1/2 cup","section":"pantry","note":null},{"key":"red-pepper-flakes","name":"Aleppo pepper flakes (or less regular red pepper flakes)","qty":"1/4 teaspoon","section":"pantry","note":null},{"key":"baking-powder","name":"baking powder","qty":"1/2 teaspoon","section":"pantry","note":null},{"key":"olive-oil","name":"olive oil","qty":"for frying","section":"pantry","note":null},{"key":"greek-yogurt","name":"plain yogurt (for cumin yogurt sauce)","qty":"3/4 cup","section":"dairy","note":null},{"key":"ground-cumin","name":"ground cumin","qty":"1/2 teaspoon","section":"pantry","note":null}],"https://smittenkitchen.com/2017/05/broccoli-rubble-farro-salad/":[{"key":"farro","name":"semi-pearled farro","qty":"1 cup","section":"pantry","note":null},{"key":"broccoli","name":"broccolini or regular broccoli","qty":"1 lb / 454 g","section":"produce","note":null},{"key":"olive-oil","name":"olive oil","qty":"4 tablespoons","section":"pantry","note":null},{"key":"garlic","name":"garlic","qty":"2 cloves, minced","section":"produce","note":null},{"key":"red-pepper-flakes","name":"red pepper flakes","qty":"to taste","section":"pantry","note":null},{"key":"lemon","name":"lemon (for zest and juice)","qty":"1","section":"produce","note":null},{"key":"pecorino","name":"pecorino romano","qty":"4 oz / 113 g, grated","section":"dairy","note":null},{"key":"egg","name":"eggs (hard-boiled, for topping)","qty":"1 per serving","section":"dairy","note":"optional"}]};
+
 const RATE_ORDER = { high: 0, medium: 1, low: 2 };
 const RATE_LABEL = { high: "High", medium: "Medium", low: "Low" };
 const CAT_LABEL = { "supper": "Supper", "batch": "Batch", "packable-lunch": "Packable lunch" };
 
-let state = { q: "", cat: "all", prot: "all", rate: "all", sortKey: "lunch", sortDir: 1, open: new Set() };
+let state = { q: "", cat: "all", prot: "all", rate: "all", sortKey: "lunch", sortDir: 1, open: new Set(), selected: new Set(), gchecked: new Set() };
 
 const rowsEl = document.getElementById("rows");
 const countEl = document.getElementById("count");
@@ -456,10 +542,14 @@ function render() {
     (state.sortKey === "lunch" && state.sortDir === 1 ? " — sorted by packed-lunch rating" : "");
   document.querySelectorAll("thead th").forEach(th => {
     const arrow = th.querySelector(".arrow");
+    if (!arrow) return;
     arrow.textContent = th.dataset.sort === state.sortKey ? (state.sortDir === 1 ? "▲" : "▼") : "";
   });
+  const selbar = document.getElementById("selbar");
+  selbar.classList.toggle("hidden", state.selected.size === 0 || document.body.classList.contains("grocery-open"));
+  selbar.querySelector(".n").textContent = state.selected.size + " recipe" + (state.selected.size === 1 ? "" : "s") + " selected";
   if (!list.length) {
-    rowsEl.innerHTML = '<tr><td colspan="5" class="empty">No recipes match — try clearing a filter.</td></tr>';
+    rowsEl.innerHTML = '<tr><td colspan="6" class="empty">No recipes match — try clearing a filter.</td></tr>';
     return;
   }
   rowsEl.innerHTML = list.map(r => {
@@ -470,6 +560,7 @@ function render() {
       : '<span class="modflag">' + r.mods.length + " minor swap" + (r.mods.length > 1 ? "s" : "") + "</span>";
     const main =
       '<tr class="main' + (isOpen ? " open" : "") + '" data-url="' + esc(r.url) + '">' +
+      '<td class="sel"><input type="checkbox" class="selbox" aria-label="Select recipe for grocery list"' + (state.selected.has(r.url) ? " checked" : "") + "></td>" +
       '<td class="recipe"><span class="chev">▶</span><span class="title">' + esc(r.title) + '</span><div class="cats">' + cats + "</div></td>" +
       '<td class="time" data-label="Time">' + esc(r.time) + (r.est ? ' <span class="est">est.</span>' : "") + (r.extra ? '<span class="extra">' + esc(r.extra) + "</span>" : "") + "</td>" +
       '<td data-label="Protein">' + esc(r.protein) + "</td>" +
@@ -479,22 +570,39 @@ function render() {
     const mods = r.mods.length
       ? "<ul>" + r.mods.map(m => "<li>" + esc(m) + "</li>").join("") + "</ul>"
       : "<p>No changes needed — fits the requirements as written.</p>";
+    const ingList = INGREDIENTS[r.url] || [];
+    const ingHtml = ingList.length
+      ? '<details class="ing"><summary>Ingredients (' + ingList.length + ")</summary><ul>" +
+        ingList.map(i => "<li>" + (i.qty ? esc(i.qty) + " " : "") + esc(i.name) + (i.note ? " <em>(" + esc(i.note) + ")</em>" : "") + "</li>").join("") +
+        "</ul></details>"
+      : "";
     const details =
-      '<tr class="details"><td colspan="5"><div class="grid">' +
+      '<tr class="details"><td colspan="6"><div class="grid">' +
       "<div><h4>About</h4><p>" + esc(r.note) + "</p><h4 style=\"margin-top:0.6rem\">Servings</h4><p>" + esc(r.servings) + "</p></div>" +
       "<div><h4>Modifications for our requirements</h4>" + mods + "</div>" +
       "<div><h4>Carb / blood-sugar note</h4><p>" + esc(r.carb) + "</p></div>" +
-      '</div><a class="visit" href="' + esc(r.url) + '" target="_blank" rel="noopener">View recipe on smittenkitchen.com →</a></td></tr>';
+      "</div>" + ingHtml +
+      '<a class="visit" href="' + esc(r.url) + '" target="_blank" rel="noopener">View recipe on smittenkitchen.com →</a></td></tr>';
     return main + details;
   }).join("");
 }
 
 rowsEl.addEventListener("click", e => {
   if (e.target.closest("a")) return;
+  if (e.target.closest(".selbox") || e.target.closest(".ing")) return;
   const tr = e.target.closest("tr.main");
   if (!tr) return;
   const url = tr.dataset.url;
   state.open.has(url) ? state.open.delete(url) : state.open.add(url);
+  render();
+});
+
+rowsEl.addEventListener("change", e => {
+  const box = e.target.closest(".selbox");
+  if (!box) return;
+  const tr = box.closest("tr.main");
+  if (!tr) return;
+  box.checked ? state.selected.add(tr.dataset.url) : state.selected.delete(tr.dataset.url);
   render();
 });
 
@@ -523,6 +631,7 @@ wireButtons("rateBtns", "rate", "rate");
 document.querySelectorAll("thead th").forEach(th => {
   th.addEventListener("click", () => {
     const k = th.dataset.sort;
+    if (!k) return;
     if (state.sortKey === k) state.sortDir *= -1;
     else { state.sortKey = k; state.sortDir = 1; }
     render();
@@ -530,7 +639,7 @@ document.querySelectorAll("thead th").forEach(th => {
 });
 
 document.getElementById("reset").addEventListener("click", () => {
-  state = { q: "", cat: "all", prot: "all", rate: "all", sortKey: "lunch", sortDir: 1, open: new Set() };
+  state = { q: "", cat: "all", prot: "all", rate: "all", sortKey: "lunch", sortDir: 1, open: new Set(), selected: state.selected, gchecked: state.gchecked };
   document.getElementById("q").value = "";
   document.getElementById("prot").value = "all";
   document.getElementById("sortSel").value = "lunch|1";
@@ -538,6 +647,83 @@ document.getElementById("reset").addEventListener("click", () => {
   document.querySelectorAll("#rateBtns button").forEach(b => b.classList.toggle("active", b.dataset.rate === "all"));
   render();
 });
+
+// --- grocery list ---
+const SECTION_ORDER = ["produce", "nuts-seeds-bread", "dairy", "frozen", "pantry"];
+const SECTION_LABEL = {
+  "produce": "Vegetables, Fruit & Produce",
+  "nuts-seeds-bread": "Nuts, Seeds & Bread",
+  "dairy": "Butter, Milk, Eggs & Dairy",
+  "frozen": "Frozen",
+  "pantry": "Pantry"
+};
+const groceryEl = document.getElementById("grocery");
+
+function renderGrocery() {
+  const chosen = DATA.filter(r => state.selected.has(r.url));
+  if (!chosen.length) { closeGrocery(); return; }
+  const bySec = {};
+  chosen.forEach(r => {
+    (INGREDIENTS[r.url] || []).forEach(it => {
+      const sec = SECTION_LABEL[it.section] ? it.section : "pantry";
+      if (!bySec[sec]) bySec[sec] = new Map();
+      if (!bySec[sec].has(it.key)) bySec[sec].set(it.key, { name: it.name, id: sec + "|" + it.key, entries: [] });
+      bySec[sec].get(it.key).entries.push({ qty: it.qty, note: it.note, from: r.title });
+    });
+  });
+  const missing = chosen.filter(r => !(INGREDIENTS[r.url] || []).length);
+  let html =
+    "<h2>Grocery list</h2>" +
+    '<p class="gsub">For ' + chosen.length + " recipe" + (chosen.length > 1 ? "s" : "") + ": " + chosen.map(r => esc(r.title)).join(" · ") + "</p>" +
+    '<div class="gactions">' +
+    '<button id="printBtn">🖨 Print list</button>' +
+    '<button id="uncheckBtn">Uncheck all</button>' +
+    '<button id="backBtn">← Back to recipes</button>' +
+    "</div>";
+  SECTION_ORDER.forEach(sec => {
+    const m = bySec[sec];
+    if (!m || !m.size) return;
+    const items = Array.from(m.values()).sort((a, b) => a.name.localeCompare(b.name));
+    html += '<div class="gsec"><h3>' + SECTION_LABEL[sec] + "</h3>" + items.map(it => {
+      const checked = state.gchecked.has(it.id);
+      const amounts = it.entries.map(en =>
+        (en.qty ? esc(en.qty) : "as needed") + ' <span class="from">[' + esc(en.from) + "]</span>" +
+        (en.note ? ' <em class="gnote">(' + esc(en.note) + ")</em>" : "")
+      ).join('<span class="plus"> + </span>');
+      return '<label class="gitem' + (checked ? " checked" : "") + '" data-id="' + esc(it.id) + '">' +
+        '<input type="checkbox"' + (checked ? " checked" : "") + ">" +
+        '<span class="gtext"><b>' + esc(it.name) + "</b> — " + amounts + "</span></label>";
+    }).join("") + "</div>";
+  });
+  if (missing.length) html += '<p class="gmiss">No ingredient data yet for: ' + missing.map(r => esc(r.title)).join(", ") + "</p>";
+  html += '<p class="gfoot">Salt, pepper, and water are assumed on hand. Amounts are listed per recipe — combine as you shop. Check items off on screen, or print for the fridge door.</p>';
+  groceryEl.innerHTML = html;
+}
+
+function openGrocery() {
+  renderGrocery();
+  document.body.classList.add("grocery-open");
+  render();
+  window.scrollTo(0, 0);
+}
+function closeGrocery() {
+  document.body.classList.remove("grocery-open");
+  render();
+}
+
+groceryEl.addEventListener("change", e => {
+  const item = e.target.closest(".gitem");
+  if (!item) return;
+  e.target.checked ? state.gchecked.add(item.dataset.id) : state.gchecked.delete(item.dataset.id);
+  item.classList.toggle("checked", e.target.checked);
+});
+groceryEl.addEventListener("click", e => {
+  if (e.target.id === "printBtn") window.print();
+  else if (e.target.id === "backBtn") closeGrocery();
+  else if (e.target.id === "uncheckBtn") { state.gchecked.clear(); renderGrocery(); }
+});
+document.getElementById("genBtn").addEventListener("click", openGrocery);
+document.getElementById("clearBtn").addEventListener("click", () => { state.selected.clear(); render(); });
 
 render();
 </script>
